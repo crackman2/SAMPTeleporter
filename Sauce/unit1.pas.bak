@@ -372,10 +372,6 @@ begin
       WriteFloat(AbY,Brendan.dwAddPosY);
       WriteFloat(AbZ,Brendan.dwAddPosZ);
 
-
-    //DISABLE AB
-
-    ///END DISABLE AB
   end;
 
 
