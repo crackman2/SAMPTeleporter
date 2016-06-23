@@ -294,7 +294,7 @@ begin
   lbwrite('Z: ' + floattostr(SavedCoords[LBIndexer].fZ));
   lbwrite('---------');
   ListBoxLocations.Items.Add('[' + IntToStr(LBIndexer) + ']' + EditLocName.Text);
-  EditLocName.Caption:='';
+  EditLocName.Caption := '';
   Inc(LBIndexer);
 end;
 
@@ -341,26 +341,6 @@ begin
 
 
   TimerReadPos.Enabled := True;
-end;
-
-procedure TForm1.Label1Click(Sender: TObject);
-begin
-
-end;
-
-procedure TForm1.LabelAirbrakeSpeedClick(Sender: TObject);
-begin
-
-end;
-
-procedure TForm1.LBDebugClick(Sender: TObject);
-begin
-
-end;
-
-procedure TForm1.ListBoxLocationsClick(Sender: TObject);
-begin
-  //ButtonLoadLocClick(Sender);
 end;
 
 function GetAngle(): single;
@@ -463,9 +443,9 @@ begin
     end;
 
     if GetAsyncKeyState(VK_LSHIFT) <> 0 then
-        AirBrConf.jinc:=AirBrConf.jincboost
+      AirBrConf.jinc := AirBrConf.jincboost
     else
-        AirBrConf.jinc:=AirBrConf.jincnorm;
+      AirBrConf.jinc := AirBrConf.jincnorm;
 
     WriteFloat(AirBrConf.AbX, LocPlayer.dwAddPosX);
     WriteFloat(AirBrConf.AbY, LocPlayer.dwAddPosY);

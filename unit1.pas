@@ -41,10 +41,6 @@ type
     procedure ButtonSaveLocClick(Sender: TObject);
     procedure CheckBoxAirbrakeChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure Label1Click(Sender: TObject);
-    procedure LabelAirbrakeSpeedClick(Sender: TObject);
-    procedure LBDebugClick(Sender: TObject);
-    procedure ListBoxLocationsClick(Sender: TObject);
     procedure TimerAirbrakeTimer(Sender: TObject);
     procedure TimerReadPosTimer(Sender: TObject);
     procedure TrackBarAirbrakeSpeedChange(Sender: TObject);
@@ -341,26 +337,6 @@ begin
 
 
   TimerReadPos.Enabled := True;
-end;
-
-procedure TForm1.Label1Click(Sender: TObject);
-begin
-
-end;
-
-procedure TForm1.LabelAirbrakeSpeedClick(Sender: TObject);
-begin
-
-end;
-
-procedure TForm1.LBDebugClick(Sender: TObject);
-begin
-
-end;
-
-procedure TForm1.ListBoxLocationsClick(Sender: TObject);
-begin
-  //ButtonLoadLocClick(Sender);
 end;
 
 function GetAngle(): single;
