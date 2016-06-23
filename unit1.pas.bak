@@ -350,7 +350,7 @@ begin
   GetAddresses();
 
   AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10;
-  AirBrConf.jincboost := AirBrConf.jinc * 2;
+  AirBrConf.jincboost := AirBrConf.jinc * 4;
   AirBrConf.jincnorm := AirBrConf.jinc;
   AirBrConf.k := (180 / PI);
   LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(AirBrConf.jinc);
@@ -540,7 +540,7 @@ end;
 procedure TForm1.TrackBarAirbrakeSpeedChange(Sender: TObject);
 begin
   AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10;
-  AirBrConf.jincboost := AirBrConf.jinc * 2;
+  AirBrConf.jincboost := AirBrConf.jinc * 4;
   AirBrConf.jincnorm := AirBrConf.jinc;
   LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(AirBrConf.jinc);
 end;

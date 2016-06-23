@@ -79,8 +79,6 @@ type
   end;
 
 
-
-
 type
   ABCONFIG = record
     jinc: single;
@@ -108,8 +106,6 @@ var                             // https://youtu.be/Ws82rXrjBOI
   AirBrakeLoc: COORDS;
   PI: single = 3.14159265358979323;
   AirBrConf: ABCONFIG;
-
-
 
 implementation
 
@@ -177,8 +173,6 @@ begin
     Result := StrToInt(Copy(Form1.ListBoxLocations.Items[i], pos1 + 1, pos2 - pos1 - 1));
 end;
 
-
-
 procedure LoadLoc(LocIndex: integer);
 begin
   WriteFloat(SavedCoords[LocIndex].fX, LocPlayer.dwAddPosX);
@@ -190,9 +184,6 @@ begin
   lbwrite('Z: ' + IntToStr(LocIndex) + floatToStr(SavedCoords[LocIndex].fZ));
   lbwrite('---------');
 end;
-
-
-
 
 procedure GetAddresses();
 begin
@@ -211,9 +202,6 @@ begin
   lbwrite('addcposy: 0x' + inttohex(LocPlayer.dwAddCPosY, 8));
   lbwrite('---------');
 end;
-
-
-
 
 procedure TForm1.ButtonLoadLocClick(Sender: TObject);
 var
@@ -235,8 +223,6 @@ begin
     lbwrite('---------');
   end;
 end;
-
-
 
 procedure TForm1.ButtonDelLocClick(Sender: TObject);
 var
@@ -295,8 +281,6 @@ begin
   GetAddresses();
 end;
 
-
-
 procedure TForm1.ButtonSaveLocClick(Sender: TObject);
 begin
   SavedCoords[LBIndexer].fX := LocPlayer.fX;
@@ -327,8 +311,6 @@ begin
   end;
 
 end;
-
-
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
@@ -379,8 +361,6 @@ procedure TForm1.ListBoxLocationsClick(Sender: TObject);
 begin
   //ButtonLoadLocClick(Sender);
 end;
-
-
 
 function GetAngle(): single;
 var
@@ -486,17 +466,10 @@ begin
     else
         AirBrConf.jinc:=AirBrConf.jincnorm;
 
-
-
-
-
     WriteFloat(AirBrConf.AbX, LocPlayer.dwAddPosX);
     WriteFloat(AirBrConf.AbY, LocPlayer.dwAddPosY);
     WriteFloat(AirBrConf.AbZ, LocPlayer.dwAddPosZ);
   end;
-
-
-
 
   if GetAsyncKeyState(VK_X) <> 0 then
   begin
@@ -522,9 +495,6 @@ begin
   end;
 
 end;
-
-
-
 
 procedure TForm1.TimerReadPosTimer(Sender: TObject);
 begin
