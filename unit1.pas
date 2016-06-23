@@ -83,7 +83,7 @@ type
 
 
 var                             // https://youtu.be/Ws82rXrjBOI
-  Brendan: PLAYER;
+  LocPlayer: PLAYER;
   Form1: TForm1;
   hFenster: HWND;
   hProcess: HANDLE;
@@ -168,9 +168,9 @@ end;
 
 procedure LoadLoc(LocIndex: integer);
 begin
-  WriteFloat(SavedCoords[LocIndex].fX, Brendan.dwAddPosX);
-  WriteFloat(SavedCoords[LocIndex].fY, Brendan.dwAddPosY);
-  WriteFloat(SavedCoords[LocIndex].fZ, Brendan.dwAddPosZ);
+  WriteFloat(SavedCoords[LocIndex].fX, LocPlayer.dwAddPosX);
+  WriteFloat(SavedCoords[LocIndex].fY, LocPlayer.dwAddPosY);
+  WriteFloat(SavedCoords[LocIndex].fZ, LocPlayer.dwAddPosZ);
   lbwrite('===Teleportet!=== to ' + SavedCoords[LocIndex].LocationName);
   lbwrite('X: ' + IntToStr(LocIndex) + floatToStr(SavedCoords[LocIndex].fX));
   lbwrite('Y: ' + IntToStr(LocIndex) + floatToStr(SavedCoords[LocIndex].fY));
@@ -184,18 +184,18 @@ end;
 procedure GetAddresses();
 begin
   dwSAMPBase := dword(GetModuleBaseAddress(dwProcId, 'samp.dll'));
-  Brendan.dwAddPosX := ReadDword(dwSAMPBase + $217678) + $30;
-  Brendan.dwAddPosY := ReadDword(dwSAMPBase + $217678) + $34;
-  Brendan.dwAddPosZ := ReadDword(dwSAMPBase + $217678) + $38;
-  Brendan.dwAddCPosX := ReadDword($400000 + $69AEB4);
-  Brendan.dwAddCPosY := ReadDword($400000 + $69AEB8);
+  LocPlayer.dwAddPosX := ReadDword(dwSAMPBase + $217678) + $30;
+  LocPlayer.dwAddPosY := ReadDword(dwSAMPBase + $217678) + $34;
+  LocPlayer.dwAddPosZ := ReadDword(dwSAMPBase + $217678) + $38;
+  LocPlayer.dwAddCPosX := ReadDword($400000 + $69AEB4);
+  LocPlayer.dwAddCPosY := ReadDword($400000 + $69AEB8);
   lbwrite('Addresses read:');
   lbwrite('"samp.dll" Base: 0x' + inttohex(dwSAMPBase, 8));
-  lbwrite('addposx: 0x' + inttohex(Brendan.dwAddPosX, 8));
-  lbwrite('addposy: 0x' + inttohex(Brendan.dwAddPosY, 8));
-  lbwrite('addposz: 0x' + inttohex(Brendan.dwAddPosZ, 8));
-  lbwrite('addcposx: 0x' +inttohex(Brendan.dwAddCPosX,8));
-  lbwrite('addcposy: 0x' +inttohex(Brendan.dwAddCPosY,8));
+  lbwrite('addposx: 0x' + inttohex(LocPlayer.dwAddPosX, 8));
+  lbwrite('addposy: 0x' + inttohex(LocPlayer.dwAddPosY, 8));
+  lbwrite('addposz: 0x' + inttohex(LocPlayer.dwAddPosZ, 8));
+  lbwrite('addcposx: 0x' +inttohex(LocPlayer.dwAddCPosX,8));
+  lbwrite('addcposy: 0x' +inttohex(LocPlayer.dwAddCPosY,8));
   lbwrite('---------');
 end;
 
@@ -286,9 +286,9 @@ end;
 
 procedure TForm1.ButtonSaveLocClick(Sender: TObject);
 begin
-  SavedCoords[LBIndexer].fX := Brendan.fX;
-  SavedCoords[LBIndexer].fY := Brendan.fY;
-  SavedCoords[LBIndexer].fZ := Brendan.fZ;
+  SavedCoords[LBIndexer].fX := LocPlayer.fX;
+  SavedCoords[LBIndexer].fY := LocPlayer.fY;
+  SavedCoords[LBIndexer].fZ := LocPlayer.fZ;
   SavedCoords[LBIndexer].LocationName := EditLocName.Text;
   lbwrite('Location "' + EditLocName.Text + '"' + ' saved!');
   lbwrite('X: ' + floattostr(SavedCoords[LBIndexer].fX));
@@ -368,9 +368,9 @@ begin
 
   if bEnableAirbrake = 1 then begin
 
-      WriteFloat(AbX,Brendan.dwAddPosX);
-      WriteFloat(AbY,Brendan.dwAddPosY);
-      WriteFloat(AbZ,Brendan.dwAddPosZ);
+      WriteFloat(AbX,LocPlayer.dwAddPosX);
+      WriteFloat(AbY,LocPlayer.dwAddPosY);
+      WriteFloat(AbZ,LocPlayer.dwAddPosZ);
 
   end;
 
@@ -382,9 +382,9 @@ begin
   if GetAsyncKeyState($58) <> 0 then
   begin
     if bEnableAirbrake=0 then begin
-      AbX:=ReadFloat(Brendan.dwAddPosX);
-      AbY:=ReadFloat(Brendan.dwAddPosY);
-      AbZ:=ReadFloat(Brendan.dwAddPosZ);
+      AbX:=ReadFloat(LocPlayer.dwAddPosX);
+      AbY:=ReadFloat(LocPlayer.dwAddPosY);
+      AbZ:=ReadFloat(LocPlayer.dwAddPosZ);
       bEnableAirBrake:=1;
       lbwrite('ON');
     end;
@@ -416,12 +416,12 @@ begin
 
 procedure TForm1.TimerReadPosTimer(Sender: TObject);
 begin
-  Brendan.fX := ReadFloat(Brendan.dwAddPosX);
-  Brendan.fY := ReadFloat(Brendan.dwAddPosY);
-  Brendan.fZ := ReadFloat(Brendan.dwAddPosZ);
-  LabelPosX.Caption := FloatToStr(Brendan.fX);
-  LabelPosY.Caption := FloatToStr(Brendan.fY);
-  LabelPosZ.Caption := FloatToStr(Brendan.fZ);
+  LocPlayer.fX := ReadFloat(LocPlayer.dwAddPosX);
+  LocPlayer.fY := ReadFloat(LocPlayer.dwAddPosY);
+  LocPlayer.fZ := ReadFloat(LocPlayer.dwAddPosZ);
+  LabelPosX.Caption := FloatToStr(LocPlayer.fX);
+  LabelPosY.Caption := FloatToStr(LocPlayer.fY);
+  LabelPosZ.Caption := FloatToStr(LocPlayer.fZ);
   LabelTelecounter.Caption := 'Teleportation count: ' + IntToStr(Telecount);
 end;
 
