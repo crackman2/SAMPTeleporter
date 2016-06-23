@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ValEdit, ExtCtrls, Windows, jwatlhelp32;
+  ValEdit, ExtCtrls, ComCtrls, Windows, jwatlhelp32, Math;
 
 type
 
@@ -24,6 +24,7 @@ type
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
+    LabelAirbrakeSpeed: TLabel;
     LabelTelecounter: TLabel;
     LabelPosX: TLabel;
     LabelPosY: TLabel;
@@ -32,6 +33,7 @@ type
     ListBoxLocations: TListBox;
     TimerAirbrake: TTimer;
     TimerReadPos: TTimer;
+    TrackBarAirbrakeSpeed: TTrackBar;
     procedure ButtonClearLogClick(Sender: TObject);
     procedure ButtonDelLocClick(Sender: TObject);
     procedure ButtonGetAddressesClick(Sender: TObject);
@@ -40,10 +42,12 @@ type
     procedure CheckBoxAirbrakeChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Label1Click(Sender: TObject);
+    procedure LabelAirbrakeSpeedClick(Sender: TObject);
     procedure LBDebugClick(Sender: TObject);
     procedure ListBoxLocationsClick(Sender: TObject);
     procedure TimerAirbrakeTimer(Sender: TObject);
     procedure TimerReadPosTimer(Sender: TObject);
+    procedure TrackBarAirbrakeSpeedChange(Sender: TObject);
   private
     { private declarations }
   public
@@ -57,11 +61,13 @@ type
     dwAddPosZ: DWORD;
     dwAddCPosX: DWORD;
     dwAddCPosY: DWORD;
-    fcX: single;
-    fcY: single;
-    fX: single;
+    fcX: single; //Camera Pos X
+    fcY: single; //Camera Pos Y
+    fX: single; // Player X
     fY: single;
     fZ: single;
+    fAngH: single; //Camera angle , horizontal
+    fAngV: single;
   end;
 
 type
@@ -78,11 +84,13 @@ type
 type
   ABCONFIG = record
     jinc: single;
+    jincnorm: single;
+    jincboost: single;
     k: single;// = (180/3.14159265358979323);
-    bEnableAirbrake: Boolean;
-    AbX:SINGLE;
-    AbY:SINGLE;
-    AbZ:SINGLE;
+    bEnableAirbrake: boolean;
+    AbX: single;
+    AbY: single;
+    AbZ: single;
   end;
 
 
@@ -192,15 +200,15 @@ begin
   LocPlayer.dwAddPosX := ReadDword(dwSAMPBase + $217678) + $30;
   LocPlayer.dwAddPosY := ReadDword(dwSAMPBase + $217678) + $34;
   LocPlayer.dwAddPosZ := ReadDword(dwSAMPBase + $217678) + $38;
-  LocPlayer.dwAddCPosX := ReadDword($400000 + $69AEB4);
-  LocPlayer.dwAddCPosY := ReadDword($400000 + $69AEB8);
+  LocPlayer.dwAddCPosX := $400000 + $69AEB4;
+  LocPlayer.dwAddCPosY := $400000 + $69AEB8;
   lbwrite('Addresses read:');
   lbwrite('"samp.dll" Base: 0x' + inttohex(dwSAMPBase, 8));
   lbwrite('addposx: 0x' + inttohex(LocPlayer.dwAddPosX, 8));
   lbwrite('addposy: 0x' + inttohex(LocPlayer.dwAddPosY, 8));
   lbwrite('addposz: 0x' + inttohex(LocPlayer.dwAddPosZ, 8));
-  lbwrite('addcposx: 0x' +inttohex(LocPlayer.dwAddCPosX,8));
-  lbwrite('addcposy: 0x' +inttohex(LocPlayer.dwAddCPosY,8));
+  lbwrite('addcposx: 0x' + inttohex(LocPlayer.dwAddCPosX, 8));
+  lbwrite('addcposy: 0x' + inttohex(LocPlayer.dwAddCPosY, 8));
   lbwrite('---------');
 end;
 
@@ -307,14 +315,16 @@ end;
 
 procedure TForm1.CheckBoxAirbrakeChange(Sender: TObject);
 begin
-  if CheckBoxAirbrake.Checked then begin
+  if CheckBoxAirbrake.Checked then
+  begin
     lbwrite('Airbrake-Hotkey enabled! Press X');
-    TimerAirbrake.Enabled:=true;
-    end
-  else begin
+    TimerAirbrake.Enabled := True;
+  end
+  else
+  begin
     lbwrite('Airbrake disabled.');
-    TimerAirbrake.Enabled:=false;
-    end;
+    TimerAirbrake.Enabled := False;
+  end;
 
 end;
 
@@ -339,14 +349,23 @@ begin
   lbwrite('hProcess: ' + IntToStr(hProcess));
   GetAddresses();
 
-  AirBrConf.jinc := 0.25;
+  AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10;
+  AirBrConf.jincboost := AirBrConf.jinc * 4;
+  AirBrConf.jincnorm := AirBrConf.jinc;
   AirBrConf.k := (180 / PI);
+  LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(AirBrConf.jinc);
+
 
 
   TimerReadPos.Enabled := True;
 end;
 
 procedure TForm1.Label1Click(Sender: TObject);
+begin
+
+end;
+
+procedure TForm1.LabelAirbrakeSpeedClick(Sender: TObject);
 begin
 
 end;
@@ -362,51 +381,147 @@ begin
 end;
 
 
+
+function GetAngle(): single;
+var
+  bIsXPlus: boolean;
+  bIsYPlus: boolean;
+  fNewPosX: single;
+  fNewPosY: single;
+  fTempAngH: single;
+begin
+
+  if LocPlayer.fcX > LocPlayer.fX then
+  begin
+    fNewPosX := LocPlayer.fcX - LocPlayer.fX;
+    bIsXPlus := True;
+  end
+  else
+  begin
+    fNewPosX := LocPlayer.fX - LocPlayer.fcX;
+    bIsXPlus := False;
+  end;
+
+  if LocPlayer.fcY > LocPlayer.fY then
+  begin
+    fNewPosY := LocPlayer.fcY - LocPlayer.fY;
+    bIsYPlus := True;
+  end
+  else
+  begin
+    fNewPosY := LocPlayer.fY - LocPlayer.fcY;
+    bIsYPlus := False;
+  end;
+
+  fTempAngH := arctan2(fNewPosY, fNewPosX) * (180 / pi);
+
+
+  if bIsXPlus and bIsYPlus then
+    fTempAngH := fTempAngH + 0
+  else if (not bIsXPlus) and bIsYPlus then
+    fTempAngH := 180 - fTempAngH
+  else if (not bIsXPlus) and (not bIsYPlus) then
+    fTempAngH := 180 + fTempAngH
+  else if (bIsXPlus) and (not bIsYPlus) then
+    fTempAngH := 360 - fTempAngH;
+
+  Result := fTempAngH;
+  //lbwrite('Angle: ' + FloatToStr(fTempAngH));
+  //lbwrite('bIsXPlus: ' + BoolToStr(bIsXPlus));
+  //lbwrite('bIsYPlus: ' + BoolToStr(bIsYPlus));
+end;
+
+
 //STILL NEEDS WORK============================================================
 procedure TForm1.TimerAirbrakeTimer(Sender: TObject);
 begin
 
-  if AirBrConf.bEnableAirbrake then begin
-      WriteFloat(AirBrConf.AbX,LocPlayer.dwAddPosX);
-      WriteFloat(AirBrConf.AbY,LocPlayer.dwAddPosY);
-      WriteFloat(AirBrConf.AbZ,LocPlayer.dwAddPosZ);
+  if AirBrConf.bEnableAirbrake then
+  begin
+    LocPlayer.fcX := ReadFloat(LocPlayer.dwAddCPosX);
+    LocPlayer.fcY := ReadFloat(LocPlayer.dwAddCPosY);
+    LocPlayer.fAngH := GetAngle() / AirBrConf.k;
+
+
+    if GetAsyncKeyState(VK_W) <> 0 then
+    begin
+      AirBrConf.AbX := AirBrConf.AbX + cos(LocPlayer.fAngH) * (AirBrConf.jinc);
+      AirBrConf.AbY := AirBrConf.AbY + sin(LocPlayer.fAngH) * (AirBrConf.jinc);
+    end;
+
+    if GetAsyncKeyState(VK_S) <> 0 then
+    begin
+      AirBrConf.AbX := AirBrConf.AbX - cos(LocPlayer.fAngH) * (AirBrConf.jinc);
+      AirBrConf.AbY := AirBrConf.AbY - sin(LocPlayer.fAngH) * (AirBrConf.jinc);
+    end;
+
+    if GetAsyncKeyState(VK_A) <> 0 then
+    begin
+      AirBrConf.AbX := AirBrConf.AbX - cos(LocPlayer.fAngH - (90 / AirBrConf.k)) *
+        (AirBrConf.jinc);
+      AirBrConf.AbY := AirBrConf.AbY - sin(LocPlayer.fAngH - (90 / AirBrConf.k)) *
+        (AirBrConf.jinc);
+    end;
+
+    if GetAsyncKeyState(VK_D) <> 0 then
+    begin
+      AirBrConf.AbX := AirBrConf.AbX - cos(LocPlayer.fAngH + (90 / AirBrConf.k)) *
+        (AirBrConf.jinc);
+      AirBrConf.AbY := AirBrConf.AbY - sin(LocPlayer.fAngH + (90 / AirBrConf.k)) *
+        (AirBrConf.jinc);
+    end;
+
+    if GetAsyncKeyState(VK_SPACE) <> 0 then
+    begin
+      AirBrConf.AbZ := AirBrConf.AbZ + AirBrConf.jinc;
+    end;
+
+    if GetAsyncKeyState(VK_LCONTROL) <> 0 then
+    begin
+      AirBrConf.AbZ := AirBrConf.AbZ - AirBrConf.jinc;
+    end;
+
+    if GetAsyncKeyState(VK_LSHIFT) <> 0 then
+        AirBrConf.jinc:=AirBrConf.jincboost
+    else
+        AirBrConf.jinc:=AirBrConf.jincnorm;
+
+
+
+
+
+    WriteFloat(AirBrConf.AbX, LocPlayer.dwAddPosX);
+    WriteFloat(AirBrConf.AbY, LocPlayer.dwAddPosY);
+    WriteFloat(AirBrConf.AbZ, LocPlayer.dwAddPosZ);
   end;
-
-
 
 
 
 
   if GetAsyncKeyState(VK_X) <> 0 then
   begin
-   if AirBrConf.bEnableAirbrake = false then begin
-      AirBrConf.AbX:=ReadFloat(LocPlayer.dwAddPosX);
-      AirBrConf.AbY:=ReadFloat(LocPlayer.dwAddPosY);
-      AirBrConf.AbZ:=ReadFloat(LocPlayer.dwAddPosZ);
-      lbwrite(floattostr(AirBrConf.AbX));
-      lbwrite(floattostr(AirBrConf.AbY));
-      lbwrite(floattostr(AirBrConf.AbZ));
-
-      AirBrConf.bEnableAirbrake:=true;
-      lbwrite('ON');
-      end
-      //lbwrite('bEnableAirbrake: ' + inttostr(bEnableAirbrake));
-   else begin
-     AirBrConf.bEnableAirbrake:=false;
-     WriteFloat(-1000,LocPlayer.dwAddPosZ);
-     lbwrite('OFF');
-   end;
-
-    while GetAsyncKeyState(VK_X) <> 0 do begin
-          Sleep(300);
-           //lbwrite('FOO');
-           //lbwrite('bEnableAirbrake: ' + IntToStr(bEnableAirbrake));
-          end;
+    if AirBrConf.bEnableAirbrake = False then
+    begin
+      AirBrConf.AbX := ReadFloat(LocPlayer.dwAddPosX);
+      AirBrConf.AbY := ReadFloat(LocPlayer.dwAddPosY);
+      AirBrConf.AbZ := ReadFloat(LocPlayer.dwAddPosZ);
+      AirBrConf.bEnableAirbrake := True;
+      lbwrite('Airbrake on');
+    end
+    else
+    begin
+      AirBrConf.bEnableAirbrake := False;
+      WriteFloat(-1000, LocPlayer.dwAddPosZ);
+      lbwrite('Airbrake off');
     end;
 
-
-
+    while GetAsyncKeyState(VK_X) <> 0 do
+    begin
+      Sleep(50);
+    end;
   end;
+
+end;
 
 
 
@@ -420,6 +535,14 @@ begin
   LabelPosY.Caption := FloatToStr(LocPlayer.fY);
   LabelPosZ.Caption := FloatToStr(LocPlayer.fZ);
   LabelTelecounter.Caption := 'Teleportation count: ' + IntToStr(Telecount);
+end;
+
+procedure TForm1.TrackBarAirbrakeSpeedChange(Sender: TObject);
+begin
+  AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10;
+  AirBrConf.jincboost := AirBrConf.jinc * 4;
+  AirBrConf.jincnorm := AirBrConf.jinc;
+  LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(AirBrConf.jinc);
 end;
 
 end.

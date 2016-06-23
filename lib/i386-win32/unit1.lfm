@@ -1,11 +1,11 @@
 object Form1: TForm1
-  Left = 1211
-  Height = 424
-  Top = 184
+  Left = 395
+  Height = 472
+  Top = 302
   Width = 320
   BorderStyle = bsDialog
   Caption = 'SA:MP Teleporter'
-  ClientHeight = 424
+  ClientHeight = 472
   ClientWidth = 320
   OnCreate = FormCreate
   Position = poScreenCenter
@@ -103,26 +103,26 @@ object Form1: TForm1
     ParentColor = False
   end
   object ListBoxDebug: TListBox
-    Left = 9
+    Left = 11
     Height = 96
-    Top = 296
+    Top = 344
     Width = 298
     ItemHeight = 0
     TabOrder = 5
   end
   object ButtonGetAddresses: TButton
-    Left = 192
+    Left = 194
     Height = 18
-    Top = 399
+    Top = 447
     Width = 115
     Caption = 'Get Addresses'
     OnClick = ButtonGetAddressesClick
     TabOrder = 6
   end
   object ButtonClearLog: TButton
-    Left = 10
+    Left = 12
     Height = 18
-    Top = 399
+    Top = 447
     Width = 78
     Caption = 'Clear Log'
     OnClick = ButtonClearLogClick
@@ -154,6 +154,25 @@ object Form1: TForm1
     Caption = 'Enable Airbrake (press ''X'')'
     OnChange = CheckBoxAirbrakeChange
     TabOrder = 9
+  end
+  object LabelAirbrakeSpeed: TLabel
+    Left = 11
+    Height = 13
+    Top = 311
+    Width = 79
+    Caption = 'Airbrake speed: '
+    ParentColor = False
+    OnClick = LabelAirbrakeSpeedClick
+  end
+  object TrackBarAirbrakeSpeed: TTrackBar
+    Left = 112
+    Height = 25
+    Top = 304
+    Width = 195
+    Max = 100
+    OnChange = TrackBarAirbrakeSpeedChange
+    Position = 10
+    TabOrder = 10
   end
   object TimerReadPos: TTimer
     Enabled = False
