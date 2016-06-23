@@ -79,6 +79,10 @@ type
   ABCONFIG = record
     jinc: single;
     k: single;// = (180/3.14159265358979323);
+    bEnableAirbrake: Boolean;
+    AbX:SINGLE;
+    AbY:SINGLE;
+    AbZ:SINGLE;
   end;
 
 
@@ -96,6 +100,7 @@ var                             // https://youtu.be/Ws82rXrjBOI
   AirBrakeLoc: COORDS;
   PI: single = 3.14159265358979323;
   AirBrConf: ABCONFIG;
+
 
 
 implementation
@@ -359,19 +364,12 @@ end;
 
 //STILL NEEDS WORK============================================================
 procedure TForm1.TimerAirbrakeTimer(Sender: TObject);
-var
-  bEnableAirbrake: Integer = 0;
-  AbX:SINGLE;
-  AbY:SINGLE;
-  AbZ:SINGLE;
 begin
 
-  if bEnableAirbrake = 1 then begin
-
-      WriteFloat(AbX,LocPlayer.dwAddPosX);
-      WriteFloat(AbY,LocPlayer.dwAddPosY);
-      WriteFloat(AbZ,LocPlayer.dwAddPosZ);
-
+  if AirBrConf.bEnableAirbrake then begin
+      WriteFloat(AirBrConf.AbX,LocPlayer.dwAddPosX);
+      WriteFloat(AirBrConf.AbY,LocPlayer.dwAddPosY);
+      WriteFloat(AirBrConf.AbZ,LocPlayer.dwAddPosZ);
   end;
 
 
@@ -379,36 +377,35 @@ begin
 
 
 
-  if GetAsyncKeyState($58) <> 0 then
+  if GetAsyncKeyState(VK_X) <> 0 then
   begin
-    if bEnableAirbrake=0 then begin
-      AbX:=ReadFloat(LocPlayer.dwAddPosX);
-      AbY:=ReadFloat(LocPlayer.dwAddPosY);
-      AbZ:=ReadFloat(LocPlayer.dwAddPosZ);
-      bEnableAirBrake:=1;
+   if AirBrConf.bEnableAirbrake = false then begin
+      AirBrConf.AbX:=ReadFloat(LocPlayer.dwAddPosX);
+      AirBrConf.AbY:=ReadFloat(LocPlayer.dwAddPosY);
+      AirBrConf.AbZ:=ReadFloat(LocPlayer.dwAddPosZ);
+      lbwrite(floattostr(AirBrConf.AbX));
+      lbwrite(floattostr(AirBrConf.AbY));
+      lbwrite(floattostr(AirBrConf.AbZ));
+
+      AirBrConf.bEnableAirbrake:=true;
       lbwrite('ON');
-    end;
+      end
+      //lbwrite('bEnableAirbrake: ' + inttostr(bEnableAirbrake));
+   else begin
+     AirBrConf.bEnableAirbrake:=false;
+     WriteFloat(-1000,LocPlayer.addposz);
+     lbwrite('OFF');
+   end;
 
-    while GetAsyncKeyState($58) <> 0 do begin
+    while GetAsyncKeyState(VK_X) <> 0 do begin
           Sleep(300);
-           lbwrite('FOO');
-           lbwrite('bEnableAirbrake: ' + IntToStr(bEnableAirbrake));
+           //lbwrite('FOO');
+           //lbwrite('bEnableAirbrake: ' + IntToStr(bEnableAirbrake));
           end;
     end;
 
 
-  if GetAsyncKeyState($58) <> 0 then begin
-     if bEnableAirbrake=1 then begin
-       bEnableAirbrake:=0;
-       lbwrite('OFF');
-     end;
-     while GetAsyncKeyState($58) <> 0 do begin
-          Sleep(300);
-           lbwrite('BAR');
-           lbwrite('bEnableAirbrake: ' + IntToStr(bEnableAirbrake));
-          end;
-  end;
-  //lbwrite('speck');
+
   end;
 
 

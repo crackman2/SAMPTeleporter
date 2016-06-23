@@ -8,8 +8,7 @@
       <Unit0>
         <Filename Value="SAMPTeleporter.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="1"/>
-        <CursorPos X="10" Y="10"/>
+        <CursorPos X="25" Y="21"/>
         <UsageCount Value="43"/>
         <Loaded Value="True"/>
       </Unit0>
@@ -20,10 +19,13 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Unit1"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="349"/>
-        <CursorPos X="122" Y="415"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="367"/>
+        <CursorPos X="65" Y="383"/>
         <UsageCount Value="43"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="G:\lazarus\lcl\include\wincontrol.inc"/>
@@ -45,21 +47,20 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Unit1"/>
-        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="360"/>
         <CursorPos X="82" Y="364"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit4>
     </Units>
     <JumpHistory Count="2" HistoryIndex="1">
       <Position1>
-        <Filename Value="Sauce\unit1.pas"/>
-        <Caret Line="190" Column="56" TopLine="135"/>
+        <Filename Value="SAMPTeleporter.lpr"/>
       </Position1>
       <Position2>
-        <Filename Value="SAMPTeleporter.lpr"/>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="354" Column="8" TopLine="220"/>
       </Position2>
     </JumpHistory>
   </ProjectSession>
