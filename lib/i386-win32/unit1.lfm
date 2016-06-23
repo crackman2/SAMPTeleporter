@@ -1,0 +1,172 @@
+object Form1: TForm1
+  Left = 1385
+  Height = 424
+  Top = 181
+  Width = 320
+  BorderStyle = bsDialog
+  Caption = 'SA:MP Teleporter'
+  ClientHeight = 424
+  ClientWidth = 320
+  OnCreate = FormCreate
+  Position = poScreenCenter
+  LCLVersion = '1.6.0.4'
+  object ButtonSaveLoc: TButton
+    Left = 11
+    Height = 32
+    Top = 200
+    Width = 93
+    Caption = 'Save Location'
+    OnClick = ButtonSaveLocClick
+    TabOrder = 0
+  end
+  object ButtonLoadLoc: TButton
+    Left = 112
+    Height = 32
+    Top = 200
+    Width = 96
+    Caption = 'Load Location'
+    OnClick = ButtonLoadLocClick
+    TabOrder = 1
+  end
+  object EditLocName: TEdit
+    Left = 11
+    Height = 21
+    Top = 175
+    Width = 296
+    TabOrder = 2
+  end
+  object ButtonDelLoc: TButton
+    Left = 216
+    Height = 32
+    Top = 200
+    Width = 91
+    Caption = 'Delete Location'
+    OnClick = ButtonDelLocClick
+    TabOrder = 3
+  end
+  object ListBoxLocations: TListBox
+    Left = 11
+    Height = 156
+    Top = 9
+    Width = 296
+    ItemHeight = 0
+    OnClick = ListBoxLocationsClick
+    TabOrder = 4
+  end
+  object Label1: TLabel
+    Left = 11
+    Height = 13
+    Top = 248
+    Width = 10
+    Caption = 'X:'
+    ParentColor = False
+    OnClick = Label1Click
+  end
+  object Label2: TLabel
+    Left = 11
+    Height = 13
+    Top = 264
+    Width = 10
+    Caption = 'Y:'
+    ParentColor = False
+  end
+  object Label3: TLabel
+    Left = 11
+    Height = 13
+    Top = 280
+    Width = 10
+    Caption = 'Z:'
+    ParentColor = False
+  end
+  object LabelPosX: TLabel
+    Left = 24
+    Height = 13
+    Top = 248
+    Width = 6
+    Caption = '0'
+    ParentColor = False
+  end
+  object LabelPosY: TLabel
+    Left = 24
+    Height = 13
+    Top = 264
+    Width = 6
+    Caption = '0'
+    ParentColor = False
+  end
+  object LabelPosZ: TLabel
+    Left = 24
+    Height = 13
+    Top = 280
+    Width = 6
+    Caption = '0'
+    ParentColor = False
+  end
+  object ListBoxDebug: TListBox
+    Left = 9
+    Height = 96
+    Top = 296
+    Width = 298
+    ItemHeight = 0
+    TabOrder = 5
+  end
+  object ButtonGetAddresses: TButton
+    Left = 192
+    Height = 18
+    Top = 399
+    Width = 115
+    Caption = 'Get Addresses'
+    OnClick = ButtonGetAddressesClick
+    TabOrder = 6
+  end
+  object ButtonClearLog: TButton
+    Left = 10
+    Height = 18
+    Top = 399
+    Width = 78
+    Caption = 'Clear Log'
+    OnClick = ButtonClearLogClick
+    TabOrder = 7
+  end
+  object LabelTelecounter: TLabel
+    Left = 112
+    Height = 13
+    Top = 280
+    Width = 98
+    Caption = 'Teleportation count:'
+    ParentColor = False
+  end
+  object CheckBoxAskIfRemove: TCheckBox
+    Left = 166
+    Height = 17
+    Top = 240
+    Width = 113
+    Caption = 'Ask before deletion'
+    Checked = True
+    State = cbChecked
+    TabOrder = 8
+  end
+  object CheckBoxAirbrake: TCheckBox
+    Left = 166
+    Height = 17
+    Top = 260
+    Width = 145
+    Caption = 'Enable Airbrake (press ''X'')'
+    OnChange = CheckBoxAirbrakeChange
+    TabOrder = 9
+  end
+  object TimerReadPos: TTimer
+    Enabled = False
+    Interval = 50
+    OnTimer = TimerReadPosTimer
+    left = 216
+    top = 80
+  end
+  object TimerAirbrake: TTimer
+    Enabled = False
+    Interval = 1
+    OnTimer = TimerAirbrakeTimer
+    left = 104
+    top = 80
+  end
+end
