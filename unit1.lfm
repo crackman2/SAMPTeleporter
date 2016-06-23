@@ -50,7 +50,6 @@ object Form1: TForm1
     Top = 9
     Width = 296
     ItemHeight = 0
-    OnClick = ListBoxLocationsClick
     TabOrder = 4
   end
   object Label1: TLabel
@@ -60,7 +59,6 @@ object Form1: TForm1
     Width = 10
     Caption = 'X:'
     ParentColor = False
-    OnClick = Label1Click
   end
   object Label2: TLabel
     Left = 11
@@ -162,7 +160,6 @@ object Form1: TForm1
     Width = 79
     Caption = 'Airbrake speed: '
     ParentColor = False
-    OnClick = LabelAirbrakeSpeedClick
   end
   object TrackBarAirbrakeSpeed: TTrackBar
     Left = 112
