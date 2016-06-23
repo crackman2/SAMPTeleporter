@@ -283,6 +283,7 @@ end;
 
 procedure TForm1.ButtonSaveLocClick(Sender: TObject);
 begin
+
   SavedCoords[LBIndexer].fX := LocPlayer.fX;
   SavedCoords[LBIndexer].fY := LocPlayer.fY;
   SavedCoords[LBIndexer].fZ := LocPlayer.fZ;
@@ -293,7 +294,7 @@ begin
   lbwrite('Z: ' + floattostr(SavedCoords[LBIndexer].fZ));
   lbwrite('---------');
   ListBoxLocations.Items.Add('[' + IntToStr(LBIndexer) + ']' + EditLocName.Text);
-
+  EditLocName.Caption := '';
   Inc(LBIndexer);
 end;
 
@@ -462,9 +463,9 @@ begin
     end;
 
     if GetAsyncKeyState(VK_LSHIFT) <> 0 then
-        AirBrConf.jinc:=AirBrConf.jincboost
+      AirBrConf.jinc := AirBrConf.jincboost
     else
-        AirBrConf.jinc:=AirBrConf.jincnorm;
+      AirBrConf.jinc := AirBrConf.jincnorm;
 
     WriteFloat(AirBrConf.AbX, LocPlayer.dwAddPosX);
     WriteFloat(AirBrConf.AbY, LocPlayer.dwAddPosY);
