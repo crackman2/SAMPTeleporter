@@ -6,10 +6,10 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ValEdit, ExtCtrls, ComCtrls, Windows, jwatlhelp32, Math;
+  ExtCtrls, ComCtrls, Buttons, Windows, jwatlhelp32, Math;
 
 type
-
+  // Tray icon , waiting for game
   { TForm1 }
 
   TForm1 = class(TForm)
@@ -34,6 +34,7 @@ type
     TimerAirbrake: TTimer;
     TimerReadPos: TTimer;
     TrackBarAirbrakeSpeed: TTrackBar;
+    TrayIcon: TTrayIcon;
     procedure ButtonClearLogClick(Sender: TObject);
     procedure ButtonDelLocClick(Sender: TObject);
     procedure ButtonGetAddressesClick(Sender: TObject);
@@ -52,10 +53,10 @@ type
 
 type
   PLAYER = record
-    dwAddPosX: DWORD;
+    dwAddPosX: DWORD; //Addresses to player coords
     dwAddPosY: DWORD;
     dwAddPosZ: DWORD;
-    dwAddCPosX: DWORD;
+    dwAddCPosX: DWORD;  //Addresses to camera position in world
     dwAddCPosY: DWORD;
     fcX: single; //Camera Pos X
     fcY: single; //Camera Pos Y
@@ -71,37 +72,40 @@ type
     fX: single;
     fY: single;
     fZ: single;
-    LocationName: string;
   end;
 
 
 type
   ABCONFIG = record
-    jinc: single;
-    jincnorm: single;
-    jincboost: single;
-    k: single;// = (180/3.14159265358979323);
-    bEnableAirbrake: boolean;
-    AbX: single;
-    AbY: single;
-    AbZ: single;
+    jinc: single;    //increment , essentially airbrake speed
+    jincnorm: single;  //stores original value
+    jincboost: single; //value used when 'boosting' (pressing shitft)
+    k: single;
+    // = (180/3.14159265358979323); (correction value Rad to Deg or other the way around
+    bEnableAirbrake: boolean; //toggles airbrake, changed by hotkey 'x'
+    fAbX: single; //new position to be written during airbrake
+    fAbY: single;
+    fAbZ: single;
   end;
 
 
 var                             // https://youtu.be/Ws82rXrjBOI
-  LocPlayer: PLAYER;
+  LocPlayer: PLAYER; //object for local player
   Form1: TForm1;
-  hFenster: HWND;
-  hProcess: HANDLE;
-  dwProcId: DWORD;
-  dwSAMPBase: DWORD;
+  hFenster: HWND;   //window handle
+  hProcess: HANDLE;  //process handle
+  dwProcId: DWORD;   //another unhelpful comment
+  dwSAMPBase: DWORD; //base address of "samp.dll", used for calculating addresses
   bGameNotFoundTrigger: boolean = True;
+  //confusing thing used for when the game isnt actually running yet
   SavedCoords: array[1..999] of COORDS;
-  LBIndexer: integer = 0;
+  //a giant array of saved coords which noone ever uses up because you cant save anyway and you've got airbrake... so who cares
+  LBIndexer: integer = 0; //Index for the array and also for display in the listbox
   Telecount: integer = 0;
-  AirBrakeLoc: COORDS;
-  PI: single = 3.14159265358979323;
-  AirBrConf: ABCONFIG;
+  //counting many times you did not have to travel by conventional means
+  PI: single = 3.14159265358979323;  //no idea
+  AirBrConf: ABCONFIG; //object for airbrake stuff
+
 
 implementation
 
@@ -109,11 +113,13 @@ implementation
 
 { TForm1 }
 
-procedure lbwrite(TXT: string);
+procedure lbwrite(TXT: string);  //just for debugging and seeming smart
 begin
   Form1.ListBoxDebug.ItemIndex := Form1.ListBoxDebug.Items.Add(TXT);
 end;
 
+
+//copy pasted function to find the modules base address
 function GetModuleBaseAddress(hProcID: cardinal; lpModName: PChar): Pointer;
 var
   hSnap: cardinal;
@@ -143,6 +149,8 @@ begin
 end;
 //end;
 
+
+//===SIMPLYFIED FUNCTIONS FOR READING AND WRITING N SHIT..====
 function ReadDword(Address: DWORD): DWORD;
 begin
   ReadProcessMemory(hProcess, Pointer(Address), @Result, sizeof(Result), nil);
@@ -157,7 +165,9 @@ procedure WriteFloat(Value: single; Address: DWORD);
 begin
   WriteProcessMemory(hProcess, Pointer(Address), @Value, sizeof(Value), nil);
 end;
+//===END OF SIMPLE SHIT==
 
+//Used because i'm to stupid to associate coodinates to a listbox entry, also copy pasted
 function GetIndexFromString(i: integer): integer;
 var
   pos1, pos2: integer;
@@ -169,6 +179,8 @@ begin
     Result := StrToInt(Copy(Form1.ListBoxLocations.Items[i], pos1 + 1, pos2 - pos1 - 1));
 end;
 
+
+//load location from COORDS array by index, also some flashy output
 procedure LoadLoc(LocIndex: integer);
 begin
   WriteFloat(SavedCoords[LocIndex].fX, LocPlayer.dwAddPosX);
@@ -181,6 +193,7 @@ begin
   lbwrite('---------');
 end;
 
+//initializing addresses
 procedure GetAddresses();
 begin
   dwSAMPBase := dword(GetModuleBaseAddress(dwProcId, 'samp.dll'));
@@ -199,6 +212,8 @@ begin
   lbwrite('---------');
 end;
 
+
+//loading location using that horrendous technique
 procedure TForm1.ButtonLoadLocClick(Sender: TObject);
 var
   i: integer;
@@ -277,6 +292,7 @@ begin
   GetAddresses();
 end;
 
+//save location, here you can see the awful act of sticking strings together to make the entry
 procedure TForm1.ButtonSaveLocClick(Sender: TObject);
 begin
 
@@ -294,6 +310,8 @@ begin
   Inc(LBIndexer);
 end;
 
+
+
 procedure TForm1.CheckBoxAirbrakeChange(Sender: TObject);
 begin
   if CheckBoxAirbrake.Checked then
@@ -309,36 +327,57 @@ begin
 
 end;
 
+
+//initializatition
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  while hProcess = 0 do
+  //cant check if the trayicon is click while in a while loop. bummer
+  TrayIcon.Hint := 'Press "X" to stop waiting and exit SAMP Teleporter';
+
+  while ((hProcess = 0) or (hFenster = 0) or (dwProcId = 0)) do
   begin
-    hFenster := FindWindow(nil, 'GTA:SA:MP');
-    GetWindowThreadProcessId(hFenster, @dwProcId);
-    hProcess := OpenProcess(PROCESS_ALL_ACCESS, False, dwProcId);
-    if (hProcess = 0) and bGameNotFoundTrigger then
+    hFenster := FindWindow(nil, 'GTA:SA:MP'); //fidning the game window handle
+    GetWindowThreadProcessId(hFenster, @dwProcId); //getting the process id from that handle
+    hProcess := OpenProcess(PROCESS_ALL_ACCESS, False, dwProcId); //get some of dem sweet rights to fool around
+    if (hProcess = 0) and bGameNotFoundTrigger then  //bGameNotFoundTrigger is used to only trigger the messagebox once
     begin
-      ShowMessage('Waiting for Game...');
+      ShowMessage('Waiting for SA:MP...');
       bGameNotFoundTrigger := False;
+      TrayIcon.Visible := True;
+      TrayIcon.ShowBalloonHint;
     end;
-    Sleep(250);
+    if GetAsyncKeyState(VK_X) <> 0 then   //check if you decided not to cheat for some reason
+    begin
+      TrayIcon.Hide;
+      ExitProcess(0);
+    end;
+    Sleep(500);
   end;
-  lbwrite('Game found.');
+  TrayIcon.Visible := True;
+
+  lbwrite('Game found.'); //flashy output
   lbwrite('ProcessID: ' + IntToStr(dwProcId));
   lbwrite('hProcess: ' + IntToStr(hProcess));
   GetAddresses();
 
-  AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10;
-  AirBrConf.jincboost := AirBrConf.jinc * 4;
+  //initiliziizng AirBrConf
+  AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10; //trackbar vals get divided by 10 to form float values
+  AirBrConf.jincboost := AirBrConf.jinc * 4;  //4 seems like a nice number
   AirBrConf.jincnorm := AirBrConf.jinc;
-  AirBrConf.k := (180 / PI);
+  AirBrConf.k := (180 / PI); //Rad to Deg or Deg to Rad
   LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(AirBrConf.jinc);
 
 
 
-  TimerReadPos.Enabled := True;
+  TimerReadPos.Enabled := True;//enable timer to read location
 end;
 
+{
+    alright so this function is a bit fucky. essentially it looks where the player is and the players camera
+    and calculates the angle in relation to the coordinate system.
+    also it checks in which quadrant the camera is in relation to the players position
+    to properly output an angle (on the horizontal axis) from 0 to 360 degrees
+}
 function GetAngle(): single;
 var
   bIsXPlus: boolean;
@@ -389,7 +428,7 @@ begin
 end;
 
 
-//STILL NEEDS WORK============================================================
+//Airbrake function
 procedure TForm1.TimerAirbrakeTimer(Sender: TObject);
 begin
 
@@ -402,40 +441,40 @@ begin
 
     if GetAsyncKeyState(VK_W) <> 0 then
     begin
-      AirBrConf.AbX := AirBrConf.AbX + cos(LocPlayer.fAngH) * (AirBrConf.jinc);
-      AirBrConf.AbY := AirBrConf.AbY + sin(LocPlayer.fAngH) * (AirBrConf.jinc);
+      AirBrConf.fAbX := AirBrConf.fAbX + cos(LocPlayer.fAngH) * (AirBrConf.jinc);
+      AirBrConf.fAbY := AirBrConf.fAbY + sin(LocPlayer.fAngH) * (AirBrConf.jinc);
     end;
 
     if GetAsyncKeyState(VK_S) <> 0 then
     begin
-      AirBrConf.AbX := AirBrConf.AbX - cos(LocPlayer.fAngH) * (AirBrConf.jinc);
-      AirBrConf.AbY := AirBrConf.AbY - sin(LocPlayer.fAngH) * (AirBrConf.jinc);
+      AirBrConf.fAbX := AirBrConf.fAbX - cos(LocPlayer.fAngH) * (AirBrConf.jinc);
+      AirBrConf.fAbY := AirBrConf.fAbY - sin(LocPlayer.fAngH) * (AirBrConf.jinc);
     end;
 
     if GetAsyncKeyState(VK_A) <> 0 then
     begin
-      AirBrConf.AbX := AirBrConf.AbX - cos(LocPlayer.fAngH - (90 / AirBrConf.k)) *
+      AirBrConf.fAbX := AirBrConf.fAbX - cos(LocPlayer.fAngH - (90 / AirBrConf.k)) *
         (AirBrConf.jinc);
-      AirBrConf.AbY := AirBrConf.AbY - sin(LocPlayer.fAngH - (90 / AirBrConf.k)) *
+      AirBrConf.fAbY := AirBrConf.fAbY - sin(LocPlayer.fAngH - (90 / AirBrConf.k)) *
         (AirBrConf.jinc);
     end;
 
     if GetAsyncKeyState(VK_D) <> 0 then
     begin
-      AirBrConf.AbX := AirBrConf.AbX - cos(LocPlayer.fAngH + (90 / AirBrConf.k)) *
+      AirBrConf.fAbX := AirBrConf.fAbX - cos(LocPlayer.fAngH + (90 / AirBrConf.k)) *
         (AirBrConf.jinc);
-      AirBrConf.AbY := AirBrConf.AbY - sin(LocPlayer.fAngH + (90 / AirBrConf.k)) *
+      AirBrConf.fAbY := AirBrConf.fAbY - sin(LocPlayer.fAngH + (90 / AirBrConf.k)) *
         (AirBrConf.jinc);
     end;
 
     if GetAsyncKeyState(VK_SPACE) <> 0 then
     begin
-      AirBrConf.AbZ := AirBrConf.AbZ + AirBrConf.jinc;
+      AirBrConf.fAbZ := AirBrConf.fAbZ + AirBrConf.jinc;
     end;
 
     if GetAsyncKeyState(VK_LCONTROL) <> 0 then
     begin
-      AirBrConf.AbZ := AirBrConf.AbZ - AirBrConf.jinc;
+      AirBrConf.fAbZ := AirBrConf.fAbZ - AirBrConf.jinc;
     end;
 
     if GetAsyncKeyState(VK_LSHIFT) <> 0 then
@@ -443,36 +482,48 @@ begin
     else
       AirBrConf.jinc := AirBrConf.jincnorm;
 
-    WriteFloat(AirBrConf.AbX, LocPlayer.dwAddPosX);
-    WriteFloat(AirBrConf.AbY, LocPlayer.dwAddPosY);
-    WriteFloat(AirBrConf.AbZ, LocPlayer.dwAddPosZ);
+    WriteFloat(AirBrConf.fAbX, LocPlayer.dwAddPosX);
+    WriteFloat(AirBrConf.fAbY, LocPlayer.dwAddPosY);
+    WriteFloat(AirBrConf.fAbZ, LocPlayer.dwAddPosZ);
   end;
 
+
+  //checking hotkey
   if GetAsyncKeyState(VK_X) <> 0 then
   begin
     if AirBrConf.bEnableAirbrake = False then
     begin
-      AirBrConf.AbX := ReadFloat(LocPlayer.dwAddPosX);
-      AirBrConf.AbY := ReadFloat(LocPlayer.dwAddPosY);
-      AirBrConf.AbZ := ReadFloat(LocPlayer.dwAddPosZ);
+      //on enable it writes the current position
+      //into AirBrConf for later manipulation
+      AirBrConf.fAbX := ReadFloat(LocPlayer.dwAddPosX);
+      AirBrConf.fAbY := ReadFloat(LocPlayer.dwAddPosY);
+      AirBrConf.fAbZ := ReadFloat(LocPlayer.dwAddPosZ);
       AirBrConf.bEnableAirbrake := True;
-      lbwrite('Airbrake on');
+      lbwrite('Airbrake on'); //annoying message, may i should make an option to disable this
     end
     else
     begin
       AirBrConf.bEnableAirbrake := False;
+      {
+       when disabling airbrake the players position on the z axis is put underground to force a respawn nearby
+       this avoid death on landing due to falldamage but also makes it impossible to land accurately on a certain spot
+      }
       WriteFloat(-1000, LocPlayer.dwAddPosZ);
       lbwrite('Airbrake off');
     end;
 
     while GetAsyncKeyState(VK_X) <> 0 do
     begin
+      //loop aimlessly while the key is still pressed to avoid bugs.
+      //you get the idea.. im too lazy to spell it out
       Sleep(50);
     end;
   end;
 
 end;
 
+
+//read positions, changes labels to output position and teleportation count
 procedure TForm1.TimerReadPosTimer(Sender: TObject);
 begin
   LocPlayer.fX := ReadFloat(LocPlayer.dwAddPosX);
