@@ -37,6 +37,7 @@ type
     LabelPosZ: TLabel;
     ListBoxDebug: TListBox;
     ListBoxLocations: TListBox;
+    Panel1: TPanel;
     TimerAirbrake: TTimer;
     TimerReadPos: TTimer;
     TrackBarAirbrakeSpeed: TTrackBar;
@@ -50,7 +51,11 @@ type
     procedure CheckBoxAmmoLockChange(Sender: TObject);
     procedure CheckBoxHealthLockChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure ImageMapClick(Sender: TObject);
+    procedure ImageMapPaint(Sender: TObject);
+    procedure ImagePlrClick(Sender: TObject);
     procedure TimerAirbrakeTimer(Sender: TObject);
+    procedure TimerImagePlrTimer(Sender: TObject);
     procedure TimerReadPosTimer(Sender: TObject);
     procedure TrackBarAirbrakeSpeedChange(Sender: TObject);
   private
@@ -303,7 +308,7 @@ end;
 
 procedure TForm1.ButtonGetAddressesClick(Sender: TObject);
 begin
-  GetAddresses();
+  FormCreate(Sender);
 end;
 
 //save location, here you can see the awful act of sticking strings together to make the entry
@@ -380,6 +385,8 @@ begin
 end;
 
 
+
+
 //initializatition
 procedure TForm1.FormCreate(Sender: TObject);
 begin
@@ -425,6 +432,44 @@ begin
   LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(AirBrConf.jinc);
 
   TimerReadPos.Enabled := True;//enable timer to read location
+end;
+
+procedure TForm1.ImageMapClick(Sender: TObject);
+var HeightTitleBar:integer;
+    newX:integer;
+    newY:integer;
+    fnewX:single;
+    fnewY:single;
+begin
+    HeightTitleBar:=GetSystemMetrics(SM_CYCAPTION);
+    newX:=(Mouse.CursorPos.X-Form1.Left-ImageMap.Left)-250;
+    newY:=-((Mouse.CursorPos.Y-Form1.Top-ImageMap.Top-HeightTitleBar)-250);
+    lbwrite('Teleported to:');
+    lbwrite('X: ' + inttostr(newX * 12));
+    lbwrite('Y: ' + inttostr(newY * 12));
+    fnewX:=newX*12;
+    fnewY:=newY*12;
+
+    WriteFloat(fnewX,LocPlayer.dwAddPosX);
+    WriteFloat(fnewY,LocPlayer.dwAddPosY);
+    WriteFloat(-500,LocPlayer.dwAddPosZ);
+    Telecount:=Telecount+1;
+end;
+
+
+
+procedure TForm1.ImageMapPaint(Sender: TObject);
+begin
+  {
+    //map size (ingame units) 6000x6000
+  ImagePlr.Top := ImageMap.Top + (-((round(LocPlayer.fY) div 12))) + 250 - (ImagePlr.Height div 2);
+  ImagePlr.Left:= ImageMap.Left+ (round(LocPlayer.fX) div 12) + 250 - (ImagePlr.Width div 2);
+   }
+end;
+
+procedure TForm1.ImagePlrClick(Sender: TObject);
+begin
+
 end;
 
 {
@@ -578,6 +623,11 @@ begin
 
 end;
 
+procedure TForm1.TimerImagePlrTimer(Sender: TObject);
+begin
+  //if ImagePlr.Visible then ImagePlr.Visible:=false else ImagePlr.Visible:=true;
+end;
+
 
 //read positions, changes labels to output position and teleportation count
 procedure TForm1.TimerReadPosTimer(Sender: TObject);
@@ -589,17 +639,16 @@ begin
   LabelPosY.Caption := FloatToStr(LocPlayer.fY);
   LabelPosZ.Caption := FloatToStr(LocPlayer.fZ);
   LabelTelecounter.Caption := 'Teleportation count: ' + IntToStr(Telecount);
-
   //player cursor position
-  //map size (ingame units) 6000x6000
-  ImagePlr.Top := ImageMap.Top + (-((round(LocPlayer.fY) div 12))) + 250 - (ImagePlr.Height div 2);
-  ImagePlr.Left:= ImageMap.Left+ (round(LocPlayer.fX) div 12) + 250 - (ImagePlr.Width div 2);
 
   //lbwrite('IMGX: ' + inttostr(ImagePlr.Top));
 
+   //map size (ingame units) 6000x6000
+  Panel1.Top := ImageMap.Top + (-((round(LocPlayer.fY) div 12))) + 250 - (Panel1.Height div 2);
+  Panel1.Left:= ImageMap.Left+ (round(LocPlayer.fX) div 12) + 250 - (Panel1.Width div 2);
 
 
-
+  // SetLayeredWindowAttributes(Panel1.Handle,$FFFF00,$FF0000,1);
 
 end;
 

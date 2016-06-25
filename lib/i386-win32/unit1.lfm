@@ -1,12 +1,12 @@
 object Form1: TForm1
-  Left = 329
-  Height = 512
-  Top = 208
-  Width = 826
+  Left = 848
+  Height = 513
+  Top = 234
+  Width = 827
   BorderStyle = bsDialog
   Caption = 'SA:MP Teleporter'
-  ClientHeight = 512
-  ClientWidth = 826
+  ClientHeight = 513
+  ClientWidth = 827
   Color = clForm
   OnCreate = FormCreate
   Position = poScreenCenter
@@ -27,14 +27,14 @@ object Form1: TForm1
     Width = 96
     Caption = 'Load Location'
     OnClick = ButtonLoadLocClick
-    TabOrder = 1
+    TabOrder = 2
   end
   object EditLocName: TEdit
     Left = 11
     Height = 21
     Top = 175
     Width = 296
-    TabOrder = 2
+    TabOrder = 3
   end
   object ButtonDelLoc: TButton
     Left = 216
@@ -43,7 +43,7 @@ object Form1: TForm1
     Width = 91
     Caption = 'Delete Location'
     OnClick = ButtonDelLocClick
-    TabOrder = 3
+    TabOrder = 4
   end
   object ListBoxLocations: TListBox
     Left = 11
@@ -51,7 +51,7 @@ object Form1: TForm1
     Top = 9
     Width = 296
     ItemHeight = 0
-    TabOrder = 4
+    TabOrder = 5
   end
   object Label1: TLabel
     Left = 11
@@ -107,7 +107,7 @@ object Form1: TForm1
     Top = 344
     Width = 298
     ItemHeight = 0
-    TabOrder = 5
+    TabOrder = 6
   end
   object ButtonGetAddresses: TButton
     Left = 194
@@ -116,7 +116,7 @@ object Form1: TForm1
     Width = 115
     Caption = 'Get Addresses'
     OnClick = ButtonGetAddressesClick
-    TabOrder = 6
+    TabOrder = 7
   end
   object ButtonClearLog: TButton
     Left = 12
@@ -125,7 +125,7 @@ object Form1: TForm1
     Width = 78
     Caption = 'Clear Log'
     OnClick = ButtonClearLogClick
-    TabOrder = 7
+    TabOrder = 8
   end
   object LabelTelecounter: TLabel
     Left = 112
@@ -143,7 +143,7 @@ object Form1: TForm1
     Caption = 'Ask before deletion'
     Checked = True
     State = cbChecked
-    TabOrder = 8
+    TabOrder = 9
   end
   object CheckBoxAirbrake: TCheckBox
     Left = 166
@@ -152,7 +152,7 @@ object Form1: TForm1
     Width = 145
     Caption = 'Enable Airbrake (press ''X'')'
     OnChange = CheckBoxAirbrakeChange
-    TabOrder = 9
+    TabOrder = 10
   end
   object LabelAirbrakeSpeed: TLabel
     Left = 11
@@ -170,7 +170,7 @@ object Form1: TForm1
     Max = 100
     OnChange = TrackBarAirbrakeSpeedChange
     Position = 10
-    TabOrder = 10
+    TabOrder = 11
   end
   object CheckBoxHealthLock: TCheckBox
     Left = 12
@@ -179,7 +179,7 @@ object Form1: TForm1
     Width = 73
     Caption = 'Invincibility'
     OnChange = CheckBoxHealthLockChange
-    TabOrder = 11
+    TabOrder = 12
   end
   object CheckBoxAmmoLock: TCheckBox
     Left = 12
@@ -188,13 +188,15 @@ object Form1: TForm1
     Width = 86
     Caption = 'Infinite Ammo'
     OnChange = CheckBoxAmmoLockChange
-    TabOrder = 12
+    TabOrder = 13
   end
   object ImageMap: TImage
     Left = 320
     Height = 500
     Top = 8
     Width = 500
+    OnClick = ImageMapClick
+    OnPaint = ImageMapPaint
     Picture.Data = {
       0A544A706567496D61676545AB0100FFD8FFE000104A46494600010101004800
       480000FFE1006C45786966000049492A00080000000300120103000100000001
@@ -3617,11 +3619,22 @@ object Form1: TForm1
       59AE50B511019E4F3F403FB6B359ACD4152BFFD9
     }
   end
+  object Panel1: TPanel
+    Left = 120
+    Height = 8
+    Top = 368
+    Width = 8
+    BevelOuter = bvNone
+    Color = clRed
+    ParentColor = False
+    TabOrder = 1
+  end
   object ImagePlr: TImage
-    Left = 258
-    Height = 21
-    Top = 472
-    Width = 21
+    Left = 0
+    Height = 1
+    Top = 0
+    Width = 1
+    OnClick = ImagePlrClick
     Picture.Data = {
       1754506F727461626C654E6574776F726B47726170686963940B000089504E47
       0D0A1A0A0000000D4948445200000015000000151006000000F98779D5000000
@@ -3718,6 +3731,8 @@ object Form1: TForm1
       CCB8169A7F36168BA9CDE0E94C13687F0BFDF6CF74030000FFFF0300ABA45075
       AF6AAC550000000049454E44AE426082
     }
+    Transparent = True
+    Visible = False
   end
   object TimerReadPos: TTimer
     Enabled = False
