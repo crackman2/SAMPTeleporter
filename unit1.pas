@@ -7,8 +7,9 @@ interface
 
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ExtCtrls, ComCtrls, Buttons, Windows, jwatlhelp32, Math;
+  Classes, SysUtils, FileUtil, SynHighlighterCpp, SynEdit, Forms, Controls,
+  Graphics, Dialogs, StdCtrls, ExtCtrls, ComCtrls, Buttons, Windows,
+  jwatlhelp32, Math;
 
 type
   { TForm1 }
@@ -24,6 +25,8 @@ type
     CheckBoxAirbrake: TCheckBox;
     CheckBoxAskIfRemove: TCheckBox;
     EditLocName: TEdit;
+    ImagePlr: TImage;
+    ImageMap: TImage;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
@@ -34,6 +37,7 @@ type
     LabelPosZ: TLabel;
     ListBoxDebug: TListBox;
     ListBoxLocations: TListBox;
+    Panel1: TPanel;
     TimerAirbrake: TTimer;
     TimerReadPos: TTimer;
     TrackBarAirbrakeSpeed: TTrackBar;
@@ -47,7 +51,11 @@ type
     procedure CheckBoxAmmoLockChange(Sender: TObject);
     procedure CheckBoxHealthLockChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure ImageMapClick(Sender: TObject);
+    procedure ImageMapPaint(Sender: TObject);
+    procedure ImagePlrClick(Sender: TObject);
     procedure TimerAirbrakeTimer(Sender: TObject);
+    procedure TimerImagePlrTimer(Sender: TObject);
     procedure TimerReadPosTimer(Sender: TObject);
     procedure TrackBarAirbrakeSpeedChange(Sender: TObject);
   private
@@ -300,7 +308,7 @@ end;
 
 procedure TForm1.ButtonGetAddressesClick(Sender: TObject);
 begin
-  GetAddresses();
+  FormCreate(Sender);
 end;
 
 //save location, here you can see the awful act of sticking strings together to make the entry
@@ -377,6 +385,8 @@ begin
 end;
 
 
+
+
 //initializatition
 procedure TForm1.FormCreate(Sender: TObject);
 begin
@@ -421,9 +431,45 @@ begin
   AirBrConf.k := (180 / PI); //Rad to Deg or Deg to Rad
   LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(AirBrConf.jinc);
 
-
-
   TimerReadPos.Enabled := True;//enable timer to read location
+end;
+
+procedure TForm1.ImageMapClick(Sender: TObject);
+var HeightTitleBar:integer;
+    newX:integer;
+    newY:integer;
+    fnewX:single;
+    fnewY:single;
+begin
+    HeightTitleBar:=GetSystemMetrics(SM_CYCAPTION);
+    newX:=(Mouse.CursorPos.X-Form1.Left-ImageMap.Left)-250;
+    newY:=-((Mouse.CursorPos.Y-Form1.Top-ImageMap.Top-HeightTitleBar)-250);
+    lbwrite('Teleported to:');
+    lbwrite('X: ' + inttostr(newX * 12));
+    lbwrite('Y: ' + inttostr(newY * 12));
+    fnewX:=newX*12;
+    fnewY:=newY*12;
+
+    WriteFloat(fnewX,LocPlayer.dwAddPosX);
+    WriteFloat(fnewY,LocPlayer.dwAddPosY);
+    WriteFloat(-500,LocPlayer.dwAddPosZ);
+    Telecount:=Telecount+1;
+end;
+
+
+
+procedure TForm1.ImageMapPaint(Sender: TObject);
+begin
+  {
+    //map size (ingame units) 6000x6000
+  ImagePlr.Top := ImageMap.Top + (-((round(LocPlayer.fY) div 12))) + 250 - (ImagePlr.Height div 2);
+  ImagePlr.Left:= ImageMap.Left+ (round(LocPlayer.fX) div 12) + 250 - (ImagePlr.Width div 2);
+   }
+end;
+
+procedure TForm1.ImagePlrClick(Sender: TObject);
+begin
+
 end;
 
 {
@@ -552,19 +598,35 @@ begin
       AirBrConf.fAbX := ReadFloat(LocPlayer.dwAddPosX);
       AirBrConf.fAbY := ReadFloat(LocPlayer.dwAddPosY);
       AirBrConf.fAbZ := ReadFloat(LocPlayer.dwAddPosZ);
+
+      {
+       disable falldamage timer (or whatever its called) (avoids fall damage, avoids death when flying through the ground)
+      }
+      //gta_sa.exe+148503 - D8 47 08              - fadd dword ptr [edi+08]
+      WriteByte($90,$400000 + $148503);
+      WriteByte($90,$400000 + $148503 + 1);
+      WriteByte($90,$400000 + $148503 + 2);
+
       AirBrConf.bEnableAirbrake := True;
-      lbwrite('Airbrake on');
+      //lbwrite('Airbrake on');
       //annoying message, may i should make an option to disable this
     end
     else
     begin
       AirBrConf.bEnableAirbrake := False;
       {
+       //THIS WAS THE SHIT WAY. ITS NOT USED ANYMORE
        when disabling airbrake the players position on the z axis is put underground to force a respawn nearby
        this avoid death on landing due to falldamage but also makes it impossible to land accurately on a certain spot
       }
-      WriteFloat(-1000, LocPlayer.dwAddPosZ);
-      lbwrite('Airbrake off');
+      //WriteFloat(-1000, LocPlayer.dwAddPosZ);
+      {
+       reenable fall timer
+      }
+      WriteByte($D8,$400000 + $148503);
+      WriteByte($47,$400000 + $148503 + 1);
+      WriteByte($08,$400000 + $148503 + 2);
+      //lbwrite('Airbrake off');
     end;
 
     while GetAsyncKeyState(VK_X) <> 0 do
@@ -575,6 +637,11 @@ begin
     end;
   end;
 
+end;
+
+procedure TForm1.TimerImagePlrTimer(Sender: TObject);
+begin
+  //if ImagePlr.Visible then ImagePlr.Visible:=false else ImagePlr.Visible:=true;
 end;
 
 
@@ -588,6 +655,17 @@ begin
   LabelPosY.Caption := FloatToStr(LocPlayer.fY);
   LabelPosZ.Caption := FloatToStr(LocPlayer.fZ);
   LabelTelecounter.Caption := 'Teleportation count: ' + IntToStr(Telecount);
+  //player cursor position
+
+  //lbwrite('IMGX: ' + inttostr(ImagePlr.Top));
+
+   //map size (ingame units) 6000x6000
+  Panel1.Top := ImageMap.Top + (-((round(LocPlayer.fY) div 12))) + 250 - (Panel1.Height div 2);
+  Panel1.Left:= ImageMap.Left+ (round(LocPlayer.fX) div 12) + 250 - (Panel1.Width div 2);
+
+
+  // SetLayeredWindowAttributes(Panel1.Handle,$FFFF00,$FF0000,1);
+
 end;
 
 procedure TForm1.TrackBarAirbrakeSpeedChange(Sender: TObject);
