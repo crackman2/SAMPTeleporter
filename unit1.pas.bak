@@ -308,7 +308,7 @@ end;
 
 procedure TForm1.ButtonGetAddressesClick(Sender: TObject);
 begin
-  TForm1.FormCreate();
+  FormCreate(Sender);
 end;
 
 //save location, here you can see the awful act of sticking strings together to make the entry
@@ -598,6 +598,14 @@ begin
       AirBrConf.fAbX := ReadFloat(LocPlayer.dwAddPosX);
       AirBrConf.fAbY := ReadFloat(LocPlayer.dwAddPosY);
       AirBrConf.fAbZ := ReadFloat(LocPlayer.dwAddPosZ);
+      //gta_sa.exe+148503 - D8 47 08              - fadd dword ptr [edi+08]
+      WriteByte($90,$400000 + $148503);
+      WriteByte($90,$400000 + $148503 + 1);
+      WriteByte($90,$400000 + $148503 + 2);
+
+
+
+
       AirBrConf.bEnableAirbrake := True;
       lbwrite('Airbrake on');
       //annoying message, may i should make an option to disable this
