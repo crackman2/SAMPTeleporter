@@ -600,7 +600,7 @@ begin
       AirBrConf.fAbZ := ReadFloat(LocPlayer.dwAddPosZ);
 
       {
-       disable fall timer (avoids fall damage)
+       disable falldamage timer (or whatever its called) (avoids fall damage, avoids death when flying through the ground)
       }
       //gta_sa.exe+148503 - D8 47 08              - fadd dword ptr [edi+08]
       WriteByte($90,$400000 + $148503);
@@ -608,24 +608,25 @@ begin
       WriteByte($90,$400000 + $148503 + 2);
 
       AirBrConf.bEnableAirbrake := True;
-      lbwrite('Airbrake on');
+      //lbwrite('Airbrake on');
       //annoying message, may i should make an option to disable this
     end
     else
     begin
       AirBrConf.bEnableAirbrake := False;
       {
+       //THIS WAS THE SHIT WAY. ITS NOT USED ANYMORE
        when disabling airbrake the players position on the z axis is put underground to force a respawn nearby
        this avoid death on landing due to falldamage but also makes it impossible to land accurately on a certain spot
       }
       //WriteFloat(-1000, LocPlayer.dwAddPosZ);
       {
-       reanble fall timer
+       reenable fall timer
       }
       WriteByte($D8,$400000 + $148503);
       WriteByte($47,$400000 + $148503 + 1);
       WriteByte($08,$400000 + $148503 + 2);
-      lbwrite('Airbrake off');
+      //lbwrite('Airbrake off');
     end;
 
     while GetAsyncKeyState(VK_X) <> 0 do
