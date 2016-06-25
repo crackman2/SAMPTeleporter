@@ -4,12 +4,13 @@ unit Unit1;
 
 interface
 
+
+
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
   ExtCtrls, ComCtrls, Buttons, Windows, jwatlhelp32, Math;
 
 type
-  // Tray icon , waiting for game
   { TForm1 }
 
   TForm1 = class(TForm)
@@ -18,6 +19,8 @@ type
     ButtonDelLoc: TButton;
     ButtonSaveLoc: TButton;
     ButtonLoadLoc: TButton;
+    CheckBoxAmmoLock: TCheckBox;
+    CheckBoxHealthLock: TCheckBox;
     CheckBoxAirbrake: TCheckBox;
     CheckBoxAskIfRemove: TCheckBox;
     EditLocName: TEdit;
@@ -41,6 +44,8 @@ type
     procedure ButtonLoadLocClick(Sender: TObject);
     procedure ButtonSaveLocClick(Sender: TObject);
     procedure CheckBoxAirbrakeChange(Sender: TObject);
+    procedure CheckBoxAmmoLockChange(Sender: TObject);
+    procedure CheckBoxHealthLockChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure TimerAirbrakeTimer(Sender: TObject);
     procedure TimerReadPosTimer(Sender: TObject);
@@ -72,6 +77,7 @@ type
     fX: single;
     fY: single;
     fZ: single;
+    LocationName: string;
   end;
 
 
@@ -164,6 +170,11 @@ end;
 procedure WriteFloat(Value: single; Address: DWORD);
 begin
   WriteProcessMemory(hProcess, Pointer(Address), @Value, sizeof(Value), nil);
+end;
+
+procedure WriteByte(Value: byte; Address: DWORD);
+begin
+  WriteProcessMemory(hProcess, Pointer(Address), @Value, sizeof(byte), nil);
 end;
 //===END OF SIMPLE SHIT==
 
@@ -327,6 +338,44 @@ begin
 
 end;
 
+procedure TForm1.CheckBoxAmmoLockChange(Sender: TObject);
+begin
+//  gta_sa.exe+3428E6 - FF 4E 0C              - dec [esi+0C]
+  if CheckBoxAmmoLock.Checked then
+    begin
+      WriteByte($90, $400000 + $3428E6);
+      WriteByte($90, $400000 + $3428E6 + 1);
+      WriteByte($90, $400000 + $3428E6 + 2);
+      lbwrite('Infinite Ammo enabled');
+    end
+    else
+    begin
+      WriteByte($FF, $400000 + $3428E6);
+      WriteByte($4E, $400000 + $3428E6 + 1);
+      WriteByte($0C, $400000 + $3428E6 + 2);
+      lbwrite('Infinite Ammo disabled');
+    end;
+end;
+
+procedure TForm1.CheckBoxHealthLockChange(Sender: TObject);
+begin
+  // HP DEC OPCODES: gta_sa.exe+B3314 - D8 65 04              - fsub dword ptr [ebp+04]
+  if CheckBoxHealthLock.Checked then
+  begin
+    WriteByte($90, $400000 + $B3314);
+    WriteByte($90, $400000 + $B3314 + 1);
+    WriteByte($90, $400000 + $B3314 + 2);
+    lbwrite('Invincibility enabled');
+  end
+  else
+  begin
+    WriteByte($D8, $400000 + $B3314);
+    WriteByte($65, $400000 + $B3314 + 1);
+    WriteByte($04, $400000 + $B3314 + 2);
+    lbwrite('Invincibility disabled');
+  end;
+end;
+
 
 //initializatition
 procedure TForm1.FormCreate(Sender: TObject);
@@ -337,16 +386,20 @@ begin
   while ((hProcess = 0) or (hFenster = 0) or (dwProcId = 0)) do
   begin
     hFenster := FindWindow(nil, 'GTA:SA:MP'); //fidning the game window handle
-    GetWindowThreadProcessId(hFenster, @dwProcId); //getting the process id from that handle
-    hProcess := OpenProcess(PROCESS_ALL_ACCESS, False, dwProcId); //get some of dem sweet rights to fool around
-    if (hProcess = 0) and bGameNotFoundTrigger then  //bGameNotFoundTrigger is used to only trigger the messagebox once
+    GetWindowThreadProcessId(hFenster, @dwProcId);
+    //getting the process id from that handle
+    hProcess := OpenProcess(PROCESS_ALL_ACCESS, False, dwProcId);
+    //get some of dem sweet rights to fool around
+    if (hProcess = 0) and bGameNotFoundTrigger then
+      //bGameNotFoundTrigger is used to only trigger the messagebox once
     begin
       ShowMessage('Waiting for SA:MP...');
       bGameNotFoundTrigger := False;
       TrayIcon.Visible := True;
       TrayIcon.ShowBalloonHint;
     end;
-    if GetAsyncKeyState(VK_X) <> 0 then   //check if you decided not to cheat for some reason
+    if GetAsyncKeyState(VK_X) <> 0 then
+      //check if you decided not to cheat for some reason
     begin
       TrayIcon.Hide;
       ExitProcess(0);
@@ -361,7 +414,8 @@ begin
   GetAddresses();
 
   //initiliziizng AirBrConf
-  AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10; //trackbar vals get divided by 10 to form float values
+  AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10;
+  //trackbar vals get divided by 10 to form float values
   AirBrConf.jincboost := AirBrConf.jinc * 4;  //4 seems like a nice number
   AirBrConf.jincnorm := AirBrConf.jinc;
   AirBrConf.k := (180 / PI); //Rad to Deg or Deg to Rad
@@ -499,7 +553,8 @@ begin
       AirBrConf.fAbY := ReadFloat(LocPlayer.dwAddPosY);
       AirBrConf.fAbZ := ReadFloat(LocPlayer.dwAddPosZ);
       AirBrConf.bEnableAirbrake := True;
-      lbwrite('Airbrake on'); //annoying message, may i should make an option to disable this
+      lbwrite('Airbrake on');
+      //annoying message, may i should make an option to disable this
     end
     else
     begin
