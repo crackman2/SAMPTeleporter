@@ -7,8 +7,9 @@ interface
 
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ExtCtrls, ComCtrls, Buttons, Windows, jwatlhelp32, Math;
+  Classes, SysUtils, FileUtil, SynHighlighterCpp, SynEdit, Forms, Controls,
+  Graphics, Dialogs, StdCtrls, ExtCtrls, ComCtrls, Buttons, Windows,
+  jwatlhelp32, Math;
 
 type
   { TForm1 }
@@ -24,6 +25,8 @@ type
     CheckBoxAirbrake: TCheckBox;
     CheckBoxAskIfRemove: TCheckBox;
     EditLocName: TEdit;
+    ImagePlr: TImage;
+    ImageMap: TImage;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
@@ -421,8 +424,6 @@ begin
   AirBrConf.k := (180 / PI); //Rad to Deg or Deg to Rad
   LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(AirBrConf.jinc);
 
-
-
   TimerReadPos.Enabled := True;//enable timer to read location
 end;
 
@@ -588,6 +589,18 @@ begin
   LabelPosY.Caption := FloatToStr(LocPlayer.fY);
   LabelPosZ.Caption := FloatToStr(LocPlayer.fZ);
   LabelTelecounter.Caption := 'Teleportation count: ' + IntToStr(Telecount);
+
+  //player cursor position
+  //map size (ingame units) 6000x6000
+  ImagePlr.Top := ImageMap.Top + (-((round(LocPlayer.fY) div 12))) + 250 - (ImagePlr.Height div 2);
+  ImagePlr.Left:= ImageMap.Left+ (round(LocPlayer.fX) div 12) + 250 - (ImagePlr.Width div 2);
+
+  //lbwrite('IMGX: ' + inttostr(ImagePlr.Top));
+
+
+
+
+
 end;
 
 procedure TForm1.TrackBarAirbrakeSpeedChange(Sender: TObject);
