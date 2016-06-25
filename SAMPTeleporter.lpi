@@ -59,9 +59,8 @@
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>
-      <Optimizations>
-        <OptimizationLevel Value="4"/>
-      </Optimizations>
+      <TargetCPU Value="i386"/>
+      <TargetOS Value="win32"/>
       <SmallerCode Value="True"/>
     </CodeGeneration>
     <Linking>

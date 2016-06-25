@@ -1,11 +1,11 @@
 object Form1: TForm1
-  Left = 1217
-  Height = 472
-  Top = 271
+  Left = 1347
+  Height = 513
+  Top = 240
   Width = 320
   BorderStyle = bsDialog
   Caption = 'SA:MP Teleporter'
-  ClientHeight = 472
+  ClientHeight = 513
   ClientWidth = 320
   OnCreate = FormCreate
   Position = poScreenCenter
@@ -170,6 +170,15 @@ object Form1: TForm1
     OnChange = TrackBarAirbrakeSpeedChange
     Position = 10
     TabOrder = 10
+  end
+  object CheckBoxHealthLock: TCheckBox
+    Left = 11
+    Height = 17
+    Top = 476
+    Width = 73
+    Caption = 'Invincibility'
+    OnChange = CheckBoxHealthLockChange
+    TabOrder = 11
   end
   object TimerReadPos: TTimer
     Enabled = False
