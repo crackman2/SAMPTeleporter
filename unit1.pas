@@ -19,6 +19,7 @@ type
     ButtonDelLoc: TButton;
     ButtonSaveLoc: TButton;
     ButtonLoadLoc: TButton;
+    CheckBoxAmmoLock: TCheckBox;
     CheckBoxHealthLock: TCheckBox;
     CheckBoxAirbrake: TCheckBox;
     CheckBoxAskIfRemove: TCheckBox;
@@ -43,6 +44,7 @@ type
     procedure ButtonLoadLocClick(Sender: TObject);
     procedure ButtonSaveLocClick(Sender: TObject);
     procedure CheckBoxAirbrakeChange(Sender: TObject);
+    procedure CheckBoxAmmoLockChange(Sender: TObject);
     procedure CheckBoxHealthLockChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure TimerAirbrakeTimer(Sender: TObject);
@@ -334,6 +336,25 @@ begin
     TimerAirbrake.Enabled := False;
   end;
 
+end;
+
+procedure TForm1.CheckBoxAmmoLockChange(Sender: TObject);
+begin
+//  gta_sa.exe+3428E6 - FF 4E 0C              - dec [esi+0C]
+  if CheckBoxAmmoLock.Checked then
+    begin
+      WriteByte($90, $400000 + $3428E6);
+      WriteByte($90, $400000 + $3428E6 + 1);
+      WriteByte($90, $400000 + $3428E6 + 2);
+      lbwrite('Infinite Ammo enabled');
+    end
+    else
+    begin
+      WriteByte($FF, $400000 + $3428E6);
+      WriteByte($4E, $400000 + $3428E6 + 1);
+      WriteByte($0C, $400000 + $3428E6 + 2);
+      lbwrite('Infinite Ammo disabled');
+    end;
 end;
 
 procedure TForm1.CheckBoxHealthLockChange(Sender: TObject);
