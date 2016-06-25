@@ -9,7 +9,6 @@ uses
   ExtCtrls, ComCtrls, Buttons, Windows, jwatlhelp32, Math;
 
 type
-  // Tray icon , waiting for game
   { TForm1 }
 
   TForm1 = class(TForm)
@@ -542,8 +541,5 @@ begin
   AirBrConf.jincnorm := AirBrConf.jinc;
   LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(AirBrConf.jinc);
 end;
-
-
-
 
 end.

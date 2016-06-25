@@ -9,7 +9,6 @@ uses
   ExtCtrls, ComCtrls, Buttons, Windows, jwatlhelp32, Math;
 
 type
-  // Tray icon , waiting for game
   { TForm1 }
 
   TForm1 = class(TForm)
@@ -72,6 +71,7 @@ type
     fX: single;
     fY: single;
     fZ: single;
+    LocationName:string;
   end;
 
 
