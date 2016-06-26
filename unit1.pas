@@ -68,8 +68,10 @@ type
     dwAddPosZ: DWORD;
     dwAddCPosX: DWORD;  //Addresses to camera position in world
     dwAddCPosY: DWORD;
+    dwAddCPosZ: DWORD;
     fcX: single; //Camera Pos X
     fcY: single; //Camera Pos Y
+    fcZ: single;
     fX: single; // Player X
     fY: single;
     fZ: single;
@@ -219,6 +221,7 @@ begin
   LocPlayer.dwAddPosZ := ReadDword(dwSAMPBase + $217678) + $38;
   LocPlayer.dwAddCPosX := $400000 + $69AEB4;
   LocPlayer.dwAddCPosY := $400000 + $69AEB8;
+  LocPlayer.dwAddCPosZ := $400000 + $76F334; //getAddress("gta_sa.exe")+0x76F334
   lbwrite('Addresses read:');
   lbwrite('"samp.dll" Base: 0x' + inttohex(dwSAMPBase, 8));
   lbwrite('addposx: 0x' + inttohex(LocPlayer.dwAddPosX, 8));
@@ -254,10 +257,7 @@ end;
 
 
 
-procedure RemoveFromConfig(Ind:integer);
-begin
-     ConfigFile.EraseSection(IntToStr(0));
-end;
+
 
 
 //removes selelected location from list
@@ -288,8 +288,8 @@ begin
         for i := ListBoxLocations.Items.Count - 1 downto 0 do
         begin
           if ListBoxLocations.Selected[i] then begin
+            ConfigFile.EraseSection(IntToStr(GetIndexFromString(i)));
             ListBoxLocations.Items.Delete(i);
-            RemoveFromConfig(i);
             end;
         end;
         lbwrite('Location deleted.');
@@ -302,8 +302,8 @@ begin
       for i := ListBoxLocations.Items.Count - 1 downto 0 do
       begin
         if ListBoxLocations.Selected[i] then begin
-          ListBoxLocations.Items.Delete(i);
-          RemoveFromConfig(i);
+           ConfigFile.EraseSection(IntToStr(GetIndexFromString(i)));
+           ListBoxLocations.Items.Delete(i);
         end;
       end;
       lbwrite('Location deleted.');
@@ -574,24 +574,27 @@ end;
 //Airbrake function
 procedure TForm1.TimerAirbrakeTimer(Sender: TObject);
 begin
-
   if AirBrConf.bEnableAirbrake then
   begin
     LocPlayer.fcX := ReadFloat(LocPlayer.dwAddCPosX);
     LocPlayer.fcY := ReadFloat(LocPlayer.dwAddCPosY);
+    LocPlayer.fcZ := ReadFloat(LocPlayer.dwAddCPosZ);
     LocPlayer.fAngH := GetAngle() / AirBrConf.k;
+    LocPlayer.fAngV := (LocPlayer.fcZ*90)/AirBrConf.k;
 
 
     if GetAsyncKeyState(VK_W) <> 0 then
     begin
-      AirBrConf.fAbX := AirBrConf.fAbX + cos(LocPlayer.fAngH) * (AirBrConf.jinc);
-      AirBrConf.fAbY := AirBrConf.fAbY + sin(LocPlayer.fAngH) * (AirBrConf.jinc);
+      AirBrConf.fAbX := AirBrConf.fAbX + cos(LocPlayer.fAngH) * (AirBrConf.jinc * cos(LocPlayer.fAngV));
+      AirBrConf.fAbY := AirBrConf.fAbY + sin(LocPlayer.fAngH) * (AirBrConf.jinc * cos(LocPlayer.fAngV));
+      AirBrConf.fAbZ := AirBrConf.fAbZ + sin(LocPlayer.fAngV) * AirBrConf.jinc;
     end;
 
     if GetAsyncKeyState(VK_S) <> 0 then
     begin
-      AirBrConf.fAbX := AirBrConf.fAbX - cos(LocPlayer.fAngH) * (AirBrConf.jinc);
-      AirBrConf.fAbY := AirBrConf.fAbY - sin(LocPlayer.fAngH) * (AirBrConf.jinc);
+      AirBrConf.fAbX := AirBrConf.fAbX - cos(LocPlayer.fAngH) * (AirBrConf.jinc * cos(LocPlayer.fAngV));
+      AirBrConf.fAbY := AirBrConf.fAbY - sin(LocPlayer.fAngH) * (AirBrConf.jinc * cos(LocPlayer.fAngV));
+      AirBrConf.fAbZ := AirBrConf.fAbZ - sin(LocPlayer.fAngV) * AirBrConf.jinc;
     end;
 
     if GetAsyncKeyState(VK_A) <> 0 then

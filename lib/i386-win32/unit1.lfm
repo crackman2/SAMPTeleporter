@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 494
+  Left = 797
   Height = 513
-  Top = 234
+  Top = 224
   Width = 827
   BorderStyle = bsDialog
   Caption = 'SA:MP Teleporter'
