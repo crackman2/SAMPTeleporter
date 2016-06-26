@@ -299,8 +299,12 @@ begin
                   end;
                   cnt:=cnt + 1;
             end;
-            //lbwrite(IntToStr(LBIndexer));
+            //lbwrite(IntToStr(ListBoxLocations.Items.Count));
             ConfigFile.WriteInteger('configconfig','maxindex',LBIndexer);
+            if ListBoxLocations.Items.Count = 0 then begin
+              LBIndexer:=0;
+              ConfigFile.WriteInteger('configconfig','maxindex',LBIndexer);
+            end;
 
             end;
         end;
@@ -325,6 +329,10 @@ begin
             end;
             //lbwrite(IntToStr(LBIndexer));
             ConfigFile.WriteInteger('configconfig','maxindex',LBIndexer);
+            if ListBoxLocations.Items.Count = 0 then begin
+              LBIndexer:=0;
+              ConfigFile.WriteInteger('configconfig','maxindex',LBIndexer);
+            end;
         end;
       end;
       lbwrite('Location deleted.');
