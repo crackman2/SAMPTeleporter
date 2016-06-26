@@ -240,6 +240,10 @@ var
   bSelected: boolean = False;
 begin
   Inc(Telecount);
+
+  ConfigFile.WriteInteger('Telecount','count',Telecount);
+
+
   for i := ListBoxLocations.Items.Count - 1 downto 0 do
   begin
     if ListBoxLocations.Selected[i] then
@@ -349,6 +353,7 @@ end;
 
 procedure TForm1.ButtonGetAddressesClick(Sender: TObject);
 begin
+  ListBoxLocations.Clear;
   hProcess:=0;
   FormCreate(Sender);
 end;
@@ -450,6 +455,7 @@ begin
 
        if not ConfigFile.SectionExists('configconfig') then begin
          ConfigFile.WriteString('configconfig','maxindex','0');
+         ConfigFile.WriteString('Telecount','count','0');
        end;
 
        MaxIndex:=ConfigFile.ReadInteger('configconfig','maxindex',1);
@@ -514,9 +520,9 @@ begin
 
   TimerReadPos.Enabled := True;//enable timer to read location
 
-
   CheckForConfigFile();
 
+  Telecount:=ConfigFile.ReadInteger('Telecount','count',1);
 end;
 
 
@@ -531,7 +537,7 @@ begin
     HeightTitleBar:=GetSystemMetrics(SM_CYCAPTION);
     newX:=(Mouse.CursorPos.X-Form1.Left-ImageMap.Left)-250;
     newY:=-((Mouse.CursorPos.Y-Form1.Top-ImageMap.Top-HeightTitleBar)-250);
-    lbwrite('Teleported to:');
+    lbwrite('Teleported by map click to:');
     lbwrite('X: ' + inttostr(newX * 12));
     lbwrite('Y: ' + inttostr(newY * 12));
     fnewX:=newX*12;
@@ -540,7 +546,8 @@ begin
     WriteFloat(fnewX,LocPlayer.dwAddPosX);
     WriteFloat(fnewY,LocPlayer.dwAddPosY);
     WriteFloat(-500,LocPlayer.dwAddPosZ);
-    Telecount:=Telecount+1;
+    inc(Telecount);
+    ConfigFile.WriteInteger('Telecount','count',Telecount);
 end;
 
 
