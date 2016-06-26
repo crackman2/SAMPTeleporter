@@ -264,6 +264,7 @@ end;
 procedure TForm1.ButtonDelLocClick(Sender: TObject);
 var
   i: integer;
+  cnt: integer=0;
   bSelected: boolean = False;
 begin
   for i := ListBoxLocations.Items.Count - 1 downto 0 do
@@ -287,9 +288,20 @@ begin
       begin
         for i := ListBoxLocations.Items.Count - 1 downto 0 do
         begin
+          cnt:=0;
           if ListBoxLocations.Selected[i] then begin
             ConfigFile.EraseSection(IntToStr(GetIndexFromString(i)));
             ListBoxLocations.Items.Delete(i);
+
+            while(cnt < ConfigFile.ReadInteger('configconfig','maxindex',1)) do begin
+                  if ConfigFile.SectionExists(inttostr(cnt)) then begin
+                     LBIndexer:=cnt+1;
+                  end;
+                  cnt:=cnt + 1;
+            end;
+            //lbwrite(IntToStr(LBIndexer));
+            ConfigFile.WriteInteger('configconfig','maxindex',LBIndexer);
+
             end;
         end;
         lbwrite('Location deleted.');
@@ -304,6 +316,15 @@ begin
         if ListBoxLocations.Selected[i] then begin
            ConfigFile.EraseSection(IntToStr(GetIndexFromString(i)));
            ListBoxLocations.Items.Delete(i);
+
+           while(cnt < ConfigFile.ReadInteger('configconfig','maxindex',1)) do begin
+                  if ConfigFile.SectionExists(inttostr(cnt)) then begin
+                     LBIndexer:=cnt+1;
+                  end;
+                  cnt:=cnt + 1;
+            end;
+            //lbwrite(IntToStr(LBIndexer));
+            ConfigFile.WriteInteger('configconfig','maxindex',LBIndexer);
         end;
       end;
       lbwrite('Location deleted.');
