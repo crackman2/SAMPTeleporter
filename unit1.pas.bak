@@ -29,6 +29,8 @@ type
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
+    LabelSpeed: TLabel;
+    LabelAirbrakeTime: TLabel;
     LabelAirbrakeSpeed: TLabel;
     LabelTelecounter: TLabel;
     LabelPosX: TLabel;
@@ -37,6 +39,8 @@ type
     ListBoxDebug: TListBox;
     ListBoxLocations: TListBox;
     Panel1: TPanel;
+    TimerSpeed: TTimer;
+    TimerAirbrakeTime: TTimer;
     TimerAirbrake: TTimer;
     TimerReadPos: TTimer;
     TrackBarAirbrakeSpeed: TTrackBar;
@@ -52,8 +56,10 @@ type
     procedure FormCreate(Sender: TObject);
     procedure ImageMapClick(Sender: TObject);
     procedure TimerAirbrakeTimer(Sender: TObject);
+    procedure TimerAirbrakeTimeTimer(Sender: TObject);
     procedure TimerImagePlrTimer(Sender: TObject);
     procedure TimerReadPosTimer(Sender: TObject);
+    procedure TimerSpeedTimer(Sender: TObject);
     procedure TrackBarAirbrakeSpeedChange(Sender: TObject);
   private
     { private declarations }
@@ -118,7 +124,9 @@ var                             // https://youtu.be/Ws82rXrjBOI
   //counting many times you did not have to travel by conventional means
   PI: single = 3.14159265358979323;  //no idea
   AirBrConf: ABCONFIG; //object for airbrake stuff
-  ConfigFile:TIniFile;
+  ConfigFile: TIniFile;
+  AirbrakeTime: integer;
+  TempX, TempY, TempZ:single;
 
 
 implementation
@@ -241,7 +249,7 @@ var
 begin
   Inc(Telecount);
 
-  ConfigFile.WriteInteger('Telecount','count',Telecount);
+  ConfigFile.WriteInteger('Telecount', 'count', Telecount);
 
 
   for i := ListBoxLocations.Items.Count - 1 downto 0 do
@@ -262,13 +270,11 @@ end;
 
 
 
-
-
 //removes selelected location from list
 procedure TForm1.ButtonDelLocClick(Sender: TObject);
 var
   i: integer;
-  cnt: integer=0;
+  cnt: integer = 0;
   bSelected: boolean = False;
 begin
   for i := ListBoxLocations.Items.Count - 1 downto 0 do
@@ -292,25 +298,29 @@ begin
       begin
         for i := ListBoxLocations.Items.Count - 1 downto 0 do
         begin
-          cnt:=0;
-          if ListBoxLocations.Selected[i] then begin
+          cnt := 0;
+          if ListBoxLocations.Selected[i] then
+          begin
             ConfigFile.EraseSection(IntToStr(GetIndexFromString(i)));
             ListBoxLocations.Items.Delete(i);
 
-            while(cnt < ConfigFile.ReadInteger('configconfig','maxindex',1)) do begin
-                  if ConfigFile.SectionExists(inttostr(cnt)) then begin
-                     LBIndexer:=cnt+1;
-                  end;
-                  cnt:=cnt + 1;
+            while (cnt < ConfigFile.ReadInteger('configconfig', 'maxindex', 1)) do
+            begin
+              if ConfigFile.SectionExists(IntToStr(cnt)) then
+              begin
+                LBIndexer := cnt + 1;
+              end;
+              cnt := cnt + 1;
             end;
             //lbwrite(IntToStr(ListBoxLocations.Items.Count));
-            ConfigFile.WriteInteger('configconfig','maxindex',LBIndexer);
-            if ListBoxLocations.Items.Count = 0 then begin
-              LBIndexer:=0;
-              ConfigFile.WriteInteger('configconfig','maxindex',LBIndexer);
+            ConfigFile.WriteInteger('configconfig', 'maxindex', LBIndexer);
+            if ListBoxLocations.Items.Count = 0 then
+            begin
+              LBIndexer := 0;
+              ConfigFile.WriteInteger('configconfig', 'maxindex', LBIndexer);
             end;
 
-            end;
+          end;
         end;
         lbwrite('Location deleted.');
         lbwrite('---------');
@@ -321,22 +331,26 @@ begin
     begin
       for i := ListBoxLocations.Items.Count - 1 downto 0 do
       begin
-        if ListBoxLocations.Selected[i] then begin
-           ConfigFile.EraseSection(IntToStr(GetIndexFromString(i)));
-           ListBoxLocations.Items.Delete(i);
+        if ListBoxLocations.Selected[i] then
+        begin
+          ConfigFile.EraseSection(IntToStr(GetIndexFromString(i)));
+          ListBoxLocations.Items.Delete(i);
 
-           while(cnt < ConfigFile.ReadInteger('configconfig','maxindex',1)) do begin
-                  if ConfigFile.SectionExists(inttostr(cnt)) then begin
-                     LBIndexer:=cnt+1;
-                  end;
-                  cnt:=cnt + 1;
+          while (cnt < ConfigFile.ReadInteger('configconfig', 'maxindex', 1)) do
+          begin
+            if ConfigFile.SectionExists(IntToStr(cnt)) then
+            begin
+              LBIndexer := cnt + 1;
             end;
-            //lbwrite(IntToStr(LBIndexer));
-            ConfigFile.WriteInteger('configconfig','maxindex',LBIndexer);
-            if ListBoxLocations.Items.Count = 0 then begin
-              LBIndexer:=0;
-              ConfigFile.WriteInteger('configconfig','maxindex',LBIndexer);
-            end;
+            cnt := cnt + 1;
+          end;
+          //lbwrite(IntToStr(LBIndexer));
+          ConfigFile.WriteInteger('configconfig', 'maxindex', LBIndexer);
+          if ListBoxLocations.Items.Count = 0 then
+          begin
+            LBIndexer := 0;
+            ConfigFile.WriteInteger('configconfig', 'maxindex', LBIndexer);
+          end;
         end;
       end;
       lbwrite('Location deleted.');
@@ -354,39 +368,46 @@ end;
 procedure TForm1.ButtonGetAddressesClick(Sender: TObject);
 begin
   ListBoxLocations.Clear;
-  hProcess:=0;
+  hProcess := 0;
   FormCreate(Sender);
 end;
 
 //save location, here you can see the awful act of sticking strings together to make the entry
 procedure TForm1.ButtonSaveLocClick(Sender: TObject);
-var TempIndex:Integer=0;
+var
+  TempIndex: integer = 0;
 begin
-  if EditLocName.Caption <> '' then begin
-  SavedCoords[LBIndexer].fX := LocPlayer.fX;
-  SavedCoords[LBIndexer].fY := LocPlayer.fY;
-  SavedCoords[LBIndexer].fZ := LocPlayer.fZ;
-  SavedCoords[LBIndexer].LocationName := EditLocName.Text;
-  lbwrite('Location "' + EditLocName.Text + '"' + ' saved!');
-  lbwrite('X: ' + floattostr(SavedCoords[LBIndexer].fX));
-  lbwrite('Y: ' + floattostr(SavedCoords[LBIndexer].fY));
-  lbwrite('Z: ' + floattostr(SavedCoords[LBIndexer].fZ));
-  lbwrite('---------');
-  ListBoxLocations.Items.Add('[' + IntToStr(LBIndexer) + ']' + EditLocName.Text);
+  if EditLocName.Caption <> '' then
+  begin
+    SavedCoords[LBIndexer].fX := LocPlayer.fX;
+    SavedCoords[LBIndexer].fY := LocPlayer.fY;
+    SavedCoords[LBIndexer].fZ := LocPlayer.fZ;
+    SavedCoords[LBIndexer].LocationName := EditLocName.Text;
+    lbwrite('Location "' + EditLocName.Text + '"' + ' saved!');
+    lbwrite('X: ' + floattostr(SavedCoords[LBIndexer].fX));
+    lbwrite('Y: ' + floattostr(SavedCoords[LBIndexer].fY));
+    lbwrite('Z: ' + floattostr(SavedCoords[LBIndexer].fZ));
+    lbwrite('---------');
+    ListBoxLocations.Items.Add('[' + IntToStr(LBIndexer) + ']' + EditLocName.Text);
 
-  ConfigFile.WriteString(IntToStr(LBIndexer),'locname',SavedCoords[LBIndexer].LocationName);
-  ConfigFile.WriteString(IntToStr(LBIndexer),'posx',floattostr(SavedCoords[LBIndexer].fX));
-  ConfigFile.WriteString(IntToStr(LBIndexer),'posy',floattostr(SavedCoords[LBIndexer].fY));
-  ConfigFile.WriteString(IntToStr(LBIndexer),'posz',floattostr(SavedCoords[LBIndexer].fZ));
+    ConfigFile.WriteString(IntToStr(LBIndexer), 'locname',
+      SavedCoords[LBIndexer].LocationName);
+    ConfigFile.WriteString(IntToStr(LBIndexer), 'posx', floattostr(
+      SavedCoords[LBIndexer].fX));
+    ConfigFile.WriteString(IntToStr(LBIndexer), 'posy', floattostr(
+      SavedCoords[LBIndexer].fY));
+    ConfigFile.WriteString(IntToStr(LBIndexer), 'posz', floattostr(
+      SavedCoords[LBIndexer].fZ));
 
-  TempIndex:=ConfigFile.ReadInteger('configconfig','maxindex',1);
-  TempIndex:=TempIndex+1;
-  ConfigFile.WriteString('configconfig','maxindex',IntToStr(TempIndex));
+    TempIndex := ConfigFile.ReadInteger('configconfig', 'maxindex', 1);
+    TempIndex := TempIndex + 1;
+    ConfigFile.WriteString('configconfig', 'maxindex', IntToStr(TempIndex));
 
-  EditLocName.Caption := '';
-  Inc(LBIndexer);
+    EditLocName.Caption := '';
+    Inc(LBIndexer);
   end
-  else begin
+  else
+  begin
     lbwrite('Location name must not be empty!');
   end;
 end;
@@ -410,21 +431,21 @@ end;
 //NOPs ammo decrement
 procedure TForm1.CheckBoxAmmoLockChange(Sender: TObject);
 begin
-//  gta_sa.exe+3428E6 - FF 4E 0C              - dec [esi+0C]
+  //  gta_sa.exe+3428E6 - FF 4E 0C              - dec [esi+0C]
   if CheckBoxAmmoLock.Checked then
-    begin
-      WriteByte($90, $400000 + $3428E6);
-      WriteByte($90, $400000 + $3428E6 + 1);
-      WriteByte($90, $400000 + $3428E6 + 2);
-      lbwrite('Infinite Ammo enabled');
-    end
-    else
-    begin
-      WriteByte($FF, $400000 + $3428E6);
-      WriteByte($4E, $400000 + $3428E6 + 1);
-      WriteByte($0C, $400000 + $3428E6 + 2);
-      lbwrite('Infinite Ammo disabled');
-    end;
+  begin
+    WriteByte($90, $400000 + $3428E6);
+    WriteByte($90, $400000 + $3428E6 + 1);
+    WriteByte($90, $400000 + $3428E6 + 2);
+    lbwrite('Infinite Ammo enabled');
+  end
+  else
+  begin
+    WriteByte($FF, $400000 + $3428E6);
+    WriteByte($4E, $400000 + $3428E6 + 1);
+    WriteByte($0C, $400000 + $3428E6 + 2);
+    lbwrite('Infinite Ammo disabled');
+  end;
 end;
 
 //NOPS health decrement (does not disable instant deaths (high falldamage, exploding car while inside etc.)
@@ -448,31 +469,38 @@ begin
 end;
 
 procedure CheckForConfigFile();
-var TempIndex:Integer=0;
-    MaxIndex:Integer;
+var
+  TempIndex: integer = 0;
+  MaxIndex: integer;
 begin
-       ConfigFile:=TIniFile.Create('SAMPTeleporter.ini');
+  ConfigFile := TIniFile.Create('SAMPTeleporter.ini');
 
-       if not ConfigFile.SectionExists('configconfig') then begin
-         ConfigFile.WriteString('configconfig','maxindex','0');
-         ConfigFile.WriteString('Telecount','count','0');
-       end;
+  if not ConfigFile.SectionExists('configconfig') then
+  begin
+    ConfigFile.WriteString('configconfig', 'maxindex', '0');
+    ConfigFile.WriteString('Telecount', 'count', '0');
+    ConfigFile.WriteString('AirbrakeTime', 'seconds', '0');
+  end;
 
-       MaxIndex:=ConfigFile.ReadInteger('configconfig','maxindex',1);
-       //loads all locations from ini into memory, lists them
-       while(TempIndex < MaxIndex) do begin
-         if ConfigFile.SectionExists(IntToStr(TempIndex)) then begin
-           SavedCoords[TempIndex].fX:=ConfigFile.ReadFloat(IntToStr(TempIndex),'posx',1);
-           SavedCoords[TempIndex].fY:=ConfigFile.ReadFloat(IntToStr(TempIndex),'posy',1);
-           SavedCoords[TempIndex].fZ:=ConfigFile.ReadFloat(IntToStr(TempIndex),'posz',1);
-           SavedCoords[TempIndex].LocationName:=ConfigFile.ReadString(IntToStr(TempIndex),'locname','');
-           Form1.ListBoxLocations.Items.Add('[' + IntToStr(TempIndex) + ']' + SavedCoords[TempIndex].LocationName);
-         end;
+  MaxIndex := ConfigFile.ReadInteger('configconfig', 'maxindex', 1);
+  //loads all locations from ini into memory, lists them
+  while (TempIndex < MaxIndex) do
+  begin
+    if ConfigFile.SectionExists(IntToStr(TempIndex)) then
+    begin
+      SavedCoords[TempIndex].fX := ConfigFile.ReadFloat(IntToStr(TempIndex), 'posx', 1);
+      SavedCoords[TempIndex].fY := ConfigFile.ReadFloat(IntToStr(TempIndex), 'posy', 1);
+      SavedCoords[TempIndex].fZ := ConfigFile.ReadFloat(IntToStr(TempIndex), 'posz', 1);
+      SavedCoords[TempIndex].LocationName :=
+        ConfigFile.ReadString(IntToStr(TempIndex), 'locname', '');
+      Form1.ListBoxLocations.Items.Add('[' + IntToStr(TempIndex) +
+        ']' + SavedCoords[TempIndex].LocationName);
+    end;
 
-         TempIndex:=TempIndex + 1;
-       end;
+    TempIndex := TempIndex + 1;
+  end;
 
-       LBIndexer:=MaxIndex;
+  LBIndexer := MaxIndex;
 end;
 
 //initializatition
@@ -522,32 +550,35 @@ begin
 
   CheckForConfigFile();
 
-  Telecount:=ConfigFile.ReadInteger('Telecount','count',1);
+  Telecount := ConfigFile.ReadInteger('Telecount', 'count', 1);
+  AirbrakeTime := ConfigFile.ReadInteger('AirbrakeTime', 'seconds', 1);
+  LabelAirbrakeTime.Caption := 'Airbrake time: ' + IntToStr(AirbrakeTime) + 's';
 end;
 
 
 //teleportation by clicking map (not very accurate, slightly buggy)
 procedure TForm1.ImageMapClick(Sender: TObject);
-var HeightTitleBar:integer;
-    newX:integer;
-    newY:integer;
-    fnewX:single;
-    fnewY:single;
+var
+  HeightTitleBar: integer;
+  newX: integer;
+  newY: integer;
+  fnewX: single;
+  fnewY: single;
 begin
-    HeightTitleBar:=GetSystemMetrics(SM_CYCAPTION);
-    newX:=(Mouse.CursorPos.X-Form1.Left-ImageMap.Left)-250;
-    newY:=-((Mouse.CursorPos.Y-Form1.Top-ImageMap.Top-HeightTitleBar)-250);
-    lbwrite('Teleported by map click to:');
-    lbwrite('X: ' + inttostr(newX * 12));
-    lbwrite('Y: ' + inttostr(newY * 12));
-    fnewX:=newX*12;
-    fnewY:=newY*12;
+  HeightTitleBar := GetSystemMetrics(SM_CYCAPTION);
+  newX := (Mouse.CursorPos.X - Form1.Left - ImageMap.Left) - 250;
+  newY := -((Mouse.CursorPos.Y - Form1.Top - ImageMap.Top - HeightTitleBar) - 250);
+  lbwrite('Teleported by map click to:');
+  lbwrite('X: ' + IntToStr(newX * 12));
+  lbwrite('Y: ' + IntToStr(newY * 12));
+  fnewX := newX * 12;
+  fnewY := newY * 12;
 
-    WriteFloat(fnewX,LocPlayer.dwAddPosX);
-    WriteFloat(fnewY,LocPlayer.dwAddPosY);
-    WriteFloat(-500,LocPlayer.dwAddPosZ);
-    inc(Telecount);
-    ConfigFile.WriteInteger('Telecount','count',Telecount);
+  WriteFloat(fnewX, LocPlayer.dwAddPosX);
+  WriteFloat(fnewY, LocPlayer.dwAddPosY);
+  WriteFloat(-500, LocPlayer.dwAddPosZ);
+  Inc(Telecount);
+  ConfigFile.WriteInteger('Telecount', 'count', Telecount);
 end;
 
 
@@ -616,20 +647,24 @@ begin
     LocPlayer.fcY := ReadFloat(LocPlayer.dwAddCPosY);
     LocPlayer.fcZ := ReadFloat(LocPlayer.dwAddCPosZ);
     LocPlayer.fAngH := GetAngle() / AirBrConf.k;
-    LocPlayer.fAngV := (LocPlayer.fcZ*90)/AirBrConf.k;
+    LocPlayer.fAngV := (LocPlayer.fcZ * 90) / AirBrConf.k;
 
 
     if GetAsyncKeyState(VK_W) <> 0 then
     begin
-      AirBrConf.fAbX := AirBrConf.fAbX + cos(LocPlayer.fAngH) * (AirBrConf.jinc * cos(LocPlayer.fAngV));
-      AirBrConf.fAbY := AirBrConf.fAbY + sin(LocPlayer.fAngH) * (AirBrConf.jinc * cos(LocPlayer.fAngV));
+      AirBrConf.fAbX := AirBrConf.fAbX + cos(LocPlayer.fAngH) *
+        (AirBrConf.jinc * cos(LocPlayer.fAngV));
+      AirBrConf.fAbY := AirBrConf.fAbY + sin(LocPlayer.fAngH) *
+        (AirBrConf.jinc * cos(LocPlayer.fAngV));
       AirBrConf.fAbZ := AirBrConf.fAbZ + sin(LocPlayer.fAngV) * AirBrConf.jinc;
     end;
 
     if GetAsyncKeyState(VK_S) <> 0 then
     begin
-      AirBrConf.fAbX := AirBrConf.fAbX - cos(LocPlayer.fAngH) * (AirBrConf.jinc * cos(LocPlayer.fAngV));
-      AirBrConf.fAbY := AirBrConf.fAbY - sin(LocPlayer.fAngH) * (AirBrConf.jinc * cos(LocPlayer.fAngV));
+      AirBrConf.fAbX := AirBrConf.fAbX - cos(LocPlayer.fAngH) *
+        (AirBrConf.jinc * cos(LocPlayer.fAngV));
+      AirBrConf.fAbY := AirBrConf.fAbY - sin(LocPlayer.fAngH) *
+        (AirBrConf.jinc * cos(LocPlayer.fAngV));
       AirBrConf.fAbZ := AirBrConf.fAbZ - sin(LocPlayer.fAngV) * AirBrConf.jinc;
     end;
 
@@ -675,6 +710,7 @@ begin
   begin
     if AirBrConf.bEnableAirbrake = False then
     begin
+      TimerAirbrakeTime.Enabled := True;
       //on enable it writes the current position
       //into AirBrConf for later manipulation
       AirBrConf.fAbX := ReadFloat(LocPlayer.dwAddPosX);
@@ -685,9 +721,9 @@ begin
        disable falldamage timer (or whatever its called) (avoids fall damage, avoids death when flying through the ground)
       }
       //gta_sa.exe+148503 - D8 47 08              - fadd dword ptr [edi+08]
-      WriteByte($90,$400000 + $148503);
-      WriteByte($90,$400000 + $148503 + 1);
-      WriteByte($90,$400000 + $148503 + 2);
+      WriteByte($90, $400000 + $148503);
+      WriteByte($90, $400000 + $148503 + 1);
+      WriteByte($90, $400000 + $148503 + 2);
 
       AirBrConf.bEnableAirbrake := True;
       //lbwrite('Airbrake on');
@@ -695,6 +731,7 @@ begin
     end
     else
     begin
+      TimerAirbrakeTime.Enabled := False;
       AirBrConf.bEnableAirbrake := False;
       {
        //THIS WAS THE SHIT WAY. ITS NOT USED ANYMORE
@@ -705,9 +742,9 @@ begin
       {
        reenable fall timer
       }
-      WriteByte($D8,$400000 + $148503);
-      WriteByte($47,$400000 + $148503 + 1);
-      WriteByte($08,$400000 + $148503 + 2);
+      WriteByte($D8, $400000 + $148503);
+      WriteByte($47, $400000 + $148503 + 1);
+      WriteByte($08, $400000 + $148503 + 2);
       //lbwrite('Airbrake off');
     end;
 
@@ -719,6 +756,13 @@ begin
     end;
   end;
 
+end;
+
+procedure TForm1.TimerAirbrakeTimeTimer(Sender: TObject);
+begin
+  Inc(AirbrakeTime);
+  LabelAirbrakeTime.Caption := 'Airbrake time: ' + IntToStr(AirbrakeTime) + 's';
+  ConfigFile.WriteInteger('AirbrakeTime', 'seconds', AirbrakeTime);
 end;
 
 procedure TForm1.TimerImagePlrTimer(Sender: TObject);
@@ -741,13 +785,41 @@ begin
 
   //lbwrite('IMGX: ' + inttostr(ImagePlr.Top));
 
-   //map size (ingame units) 6000x6000
-  Panel1.Top := ImageMap.Top + (-((round(LocPlayer.fY) div 12))) + 250 - (Panel1.Height div 2);
-  Panel1.Left:= ImageMap.Left+ (round(LocPlayer.fX) div 12) + 250 - (Panel1.Width div 2);
+  //map size (ingame units) 6000x6000
+  Panel1.Top := ImageMap.Top + (-((round(LocPlayer.fY) div 12))) +
+    250 - (Panel1.Height div 2);
+  Panel1.Left := ImageMap.Left + (round(LocPlayer.fX) div 12) + 250 - (Panel1.Width div 2);
 
 
   // SetLayeredWindowAttributes(Panel1.Handle,$FFFF00,$FF0000,1);
 
+end;
+
+procedure TForm1.TimerSpeedTimer(Sender: TObject);
+var
+  Dist,DiffX,DiffY,DiffZ: single;
+  intDist: integer;
+begin
+
+    DiffX:=LocPlayer.fX-TempX;
+    DiffY:=LocPlayer.fY-TempY;
+    DiffZ:=LocPlayer.fZ-TempZ;
+
+    DiffX:=power(DiffX,2);
+    DiffY:=power(DiffY,2);
+    DiffZ:=power(DiffZ,2);
+
+    Dist:= sqrt(DiffX + DiffY + DiffZ);
+
+    {Dist := sqrt(((LocPlayer.fX - TempX) * (LocPlayer.fX - TempX)) +
+    ((LocPlayer.fY - TempY) * (LocPlayer.fX - TempY)) +
+    ((LocPlayer.fZ - TempZ) * (LocPlayer.fX - TempZ)));  }
+    Dist := Dist * 100 * 1.8;
+    intDist := round(Dist);
+    LabelSpeed.Caption := 'Speed: ' + IntToStr(intDist) + ' km/h';
+    TempX := LocPlayer.fX;
+    TempY := LocPlayer.fY;
+    TempZ := LocPlayer.fZ;
 end;
 
 //trackbar for changing airbrake speed
