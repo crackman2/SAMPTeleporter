@@ -9,7 +9,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, SynHighlighterCpp, SynEdit, Forms, Controls,
   Graphics, Dialogs, StdCtrls, ExtCtrls, ComCtrls, Buttons, Windows,
-  jwatlhelp32, Math;
+  jwatlhelp32, Math, IniFiles;
 
 type
   { TForm1 }
@@ -116,6 +116,7 @@ var                             // https://youtu.be/Ws82rXrjBOI
   //counting many times you did not have to travel by conventional means
   PI: single = 3.14159265358979323;  //no idea
   AirBrConf: ABCONFIG; //object for airbrake stuff
+  ConfigFile:TIniFile;
 
 
 implementation
@@ -203,9 +204,9 @@ begin
   WriteFloat(SavedCoords[LocIndex].fY, LocPlayer.dwAddPosY);
   WriteFloat(SavedCoords[LocIndex].fZ, LocPlayer.dwAddPosZ);
   lbwrite('===Teleportet!=== to ' + SavedCoords[LocIndex].LocationName);
-  lbwrite('X: ' + IntToStr(LocIndex) + floatToStr(SavedCoords[LocIndex].fX));
-  lbwrite('Y: ' + IntToStr(LocIndex) + floatToStr(SavedCoords[LocIndex].fY));
-  lbwrite('Z: ' + IntToStr(LocIndex) + floatToStr(SavedCoords[LocIndex].fZ));
+  lbwrite('X: ' + floatToStr(SavedCoords[LocIndex].fX));
+  lbwrite('Y: ' + floatToStr(SavedCoords[LocIndex].fY));
+  lbwrite('Z: ' + floatToStr(SavedCoords[LocIndex].fZ));
   lbwrite('---------');
 end;
 
@@ -251,6 +252,14 @@ begin
   end;
 end;
 
+
+
+procedure RemoveFromConfig(Ind:integer);
+begin
+     ConfigFile.EraseSection(IntToStr(0));
+end;
+
+
 //removes selelected location from list
 procedure TForm1.ButtonDelLocClick(Sender: TObject);
 var
@@ -278,8 +287,10 @@ begin
       begin
         for i := ListBoxLocations.Items.Count - 1 downto 0 do
         begin
-          if ListBoxLocations.Selected[i] then
+          if ListBoxLocations.Selected[i] then begin
             ListBoxLocations.Items.Delete(i);
+            RemoveFromConfig(i);
+            end;
         end;
         lbwrite('Location deleted.');
         lbwrite('---------');
@@ -290,8 +301,10 @@ begin
     begin
       for i := ListBoxLocations.Items.Count - 1 downto 0 do
       begin
-        if ListBoxLocations.Selected[i] then
+        if ListBoxLocations.Selected[i] then begin
           ListBoxLocations.Items.Delete(i);
+          RemoveFromConfig(i);
+        end;
       end;
       lbwrite('Location deleted.');
       lbwrite('---------');
@@ -313,7 +326,9 @@ end;
 
 //save location, here you can see the awful act of sticking strings together to make the entry
 procedure TForm1.ButtonSaveLocClick(Sender: TObject);
+var TempIndex:Integer=0;
 begin
+  if EditLocName.Caption <> '' then begin
   SavedCoords[LBIndexer].fX := LocPlayer.fX;
   SavedCoords[LBIndexer].fY := LocPlayer.fY;
   SavedCoords[LBIndexer].fZ := LocPlayer.fZ;
@@ -324,8 +339,22 @@ begin
   lbwrite('Z: ' + floattostr(SavedCoords[LBIndexer].fZ));
   lbwrite('---------');
   ListBoxLocations.Items.Add('[' + IntToStr(LBIndexer) + ']' + EditLocName.Text);
+
+  ConfigFile.WriteString(IntToStr(LBIndexer),'locname',SavedCoords[LBIndexer].LocationName);
+  ConfigFile.WriteString(IntToStr(LBIndexer),'posx',floattostr(SavedCoords[LBIndexer].fX));
+  ConfigFile.WriteString(IntToStr(LBIndexer),'posy',floattostr(SavedCoords[LBIndexer].fY));
+  ConfigFile.WriteString(IntToStr(LBIndexer),'posz',floattostr(SavedCoords[LBIndexer].fZ));
+
+  TempIndex:=ConfigFile.ReadInteger('configconfig','maxindex',1);
+  TempIndex:=TempIndex+1;
+  ConfigFile.WriteString('configconfig','maxindex',IntToStr(TempIndex));
+
   EditLocName.Caption := '';
   Inc(LBIndexer);
+  end
+  else begin
+    lbwrite('Location name must not be empty!');
+  end;
 end;
 
 //option to enable or disable airbrake hotkey (because airbrake is easily detected)
@@ -384,15 +413,38 @@ begin
   end;
 end;
 
+procedure CheckForConfigFile();
+var TempIndex:Integer=0;
+    MaxIndex:Integer;
+begin
+       ConfigFile:=TIniFile.Create('SAMPTeleporter.ini');
 
+       if not ConfigFile.SectionExists('configconfig') then begin
+         ConfigFile.WriteString('configconfig','maxindex','0');
+       end;
 
+       MaxIndex:=ConfigFile.ReadInteger('configconfig','maxindex',1);
+       //loads all locations from ini into memory, lists them
+       while(TempIndex < MaxIndex) do begin
+         if ConfigFile.SectionExists(IntToStr(TempIndex)) then begin
+           SavedCoords[TempIndex].fX:=ConfigFile.ReadFloat(IntToStr(TempIndex),'posx',1);
+           SavedCoords[TempIndex].fY:=ConfigFile.ReadFloat(IntToStr(TempIndex),'posy',1);
+           SavedCoords[TempIndex].fZ:=ConfigFile.ReadFloat(IntToStr(TempIndex),'posz',1);
+           SavedCoords[TempIndex].LocationName:=ConfigFile.ReadString(IntToStr(TempIndex),'locname','');
+           Form1.ListBoxLocations.Items.Add('[' + IntToStr(TempIndex) + ']' + SavedCoords[TempIndex].LocationName);
+         end;
+
+         TempIndex:=TempIndex + 1;
+       end;
+
+       LBIndexer:=MaxIndex;
+end;
 
 //initializatition
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   //cant check if the trayicon is click while in a while loop. bummer
   TrayIcon.Hint := 'Press "X" to stop waiting and exit SAMP Teleporter';
-
   while ((hProcess = 0) or (hFenster = 0) or (dwProcId = 0)) do
   begin
     hFenster := FindWindow(nil, 'GTA:SA:MP'); //fidning the game window handle
@@ -432,6 +484,10 @@ begin
   LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(AirBrConf.jinc);
 
   TimerReadPos.Enabled := True;//enable timer to read location
+
+
+  CheckForConfigFile();
+
 end;
 
 
