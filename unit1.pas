@@ -25,7 +25,6 @@ type
     CheckBoxAirbrake: TCheckBox;
     CheckBoxAskIfRemove: TCheckBox;
     EditLocName: TEdit;
-    ImagePlr: TImage;
     ImageMap: TImage;
     Label1: TLabel;
     Label2: TLabel;
@@ -52,8 +51,6 @@ type
     procedure CheckBoxHealthLockChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure ImageMapClick(Sender: TObject);
-    procedure ImageMapPaint(Sender: TObject);
-    procedure ImagePlrClick(Sender: TObject);
     procedure TimerAirbrakeTimer(Sender: TObject);
     procedure TimerImagePlrTimer(Sender: TObject);
     procedure TimerReadPosTimer(Sender: TObject);
@@ -81,7 +78,7 @@ type
   end;
 
 type
-  COORDS = record
+  COORDS = record       //struct for saved locations
     fX: single;
     fY: single;
     fZ: single;
@@ -254,6 +251,7 @@ begin
   end;
 end;
 
+//removes selelected location from list
 procedure TForm1.ButtonDelLocClick(Sender: TObject);
 var
   i: integer;
@@ -301,6 +299,7 @@ begin
   end;
 end;
 
+//clears log ..
 procedure TForm1.ButtonClearLogClick(Sender: TObject);
 begin
   ListBoxDebug.Clear;
@@ -308,13 +307,13 @@ end;
 
 procedure TForm1.ButtonGetAddressesClick(Sender: TObject);
 begin
+  hProcess:=0;
   FormCreate(Sender);
 end;
 
 //save location, here you can see the awful act of sticking strings together to make the entry
 procedure TForm1.ButtonSaveLocClick(Sender: TObject);
 begin
-
   SavedCoords[LBIndexer].fX := LocPlayer.fX;
   SavedCoords[LBIndexer].fY := LocPlayer.fY;
   SavedCoords[LBIndexer].fZ := LocPlayer.fZ;
@@ -329,8 +328,7 @@ begin
   Inc(LBIndexer);
 end;
 
-
-
+//option to enable or disable airbrake hotkey (because airbrake is easily detected)
 procedure TForm1.CheckBoxAirbrakeChange(Sender: TObject);
 begin
   if CheckBoxAirbrake.Checked then
@@ -346,6 +344,7 @@ begin
 
 end;
 
+//NOPs ammo decrement
 procedure TForm1.CheckBoxAmmoLockChange(Sender: TObject);
 begin
 //  gta_sa.exe+3428E6 - FF 4E 0C              - dec [esi+0C]
@@ -365,6 +364,7 @@ begin
     end;
 end;
 
+//NOPS health decrement (does not disable instant deaths (high falldamage, exploding car while inside etc.)
 procedure TForm1.CheckBoxHealthLockChange(Sender: TObject);
 begin
   // HP DEC OPCODES: gta_sa.exe+B3314 - D8 65 04              - fsub dword ptr [ebp+04]
@@ -434,6 +434,8 @@ begin
   TimerReadPos.Enabled := True;//enable timer to read location
 end;
 
+
+//teleportation by clicking map (not very accurate, slightly buggy)
 procedure TForm1.ImageMapClick(Sender: TObject);
 var HeightTitleBar:integer;
     newX:integer;
@@ -456,21 +458,6 @@ begin
     Telecount:=Telecount+1;
 end;
 
-
-
-procedure TForm1.ImageMapPaint(Sender: TObject);
-begin
-  {
-    //map size (ingame units) 6000x6000
-  ImagePlr.Top := ImageMap.Top + (-((round(LocPlayer.fY) div 12))) + 250 - (ImagePlr.Height div 2);
-  ImagePlr.Left:= ImageMap.Left+ (round(LocPlayer.fX) div 12) + 250 - (ImagePlr.Width div 2);
-   }
-end;
-
-procedure TForm1.ImagePlrClick(Sender: TObject);
-begin
-
-end;
 
 {
     alright so this function is a bit fucky. essentially it looks where the player is and the players camera
@@ -668,6 +655,7 @@ begin
 
 end;
 
+//trackbar for changing airbrake speed
 procedure TForm1.TrackBarAirbrakeSpeedChange(Sender: TObject);
 begin
   AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10;
