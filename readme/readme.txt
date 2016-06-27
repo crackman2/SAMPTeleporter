@@ -20,4 +20,10 @@ controls for airbrake:
 
 known bugs:
 - lots
-- if the ini file isnt present and you start SAMPTeleporter.exe it will display an error. restart for it to work normally after that. i think this only happens when GTA:SA:MP is already running
+- if the ini file isnt present and you start SAMPTeleporter.exe it will display an error. 
+- clicking the map to teleport is not the most accurate. clicking near streets helps this problem.
+- THE PLAYER MUST BE INGAME TO TELEPORT. Teleporting while in the menu will result in just not being teleported.
+
+restart for it to work normally after that. i think this only happens when GTA:SA:MP is 
+
+already running
