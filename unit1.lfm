@@ -1,12 +1,12 @@
 object Form1: TForm1
-  Left = 1168
-  Height = 525
-  Top = 567
+  Left = 553
+  Height = 534
+  Top = 130
   Width = 827
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SA:MP Teleporter'
-  ClientHeight = 525
+  ClientHeight = 534
   ClientWidth = 827
   Color = clForm
   Icon.Data = {
@@ -3757,9 +3757,9 @@ object Form1: TForm1
     }
   end
   object Panel1: TPanel
-    Left = 120
+    Left = 584
     Height = 8
-    Top = 368
+    Top = 248
     Width = 8
     BevelOuter = bvNone
     Color = clRed
@@ -3949,6 +3949,7 @@ object Form1: TForm1
     top = 25
   end
   object TimerSpeed: TTimer
+    Interval = 500
     OnTimer = TimerSpeedTimer
     left = 200
     top = 25

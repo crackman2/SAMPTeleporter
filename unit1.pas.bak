@@ -126,7 +126,7 @@ var                             // https://youtu.be/Ws82rXrjBOI
   AirBrConf: ABCONFIG; //object for airbrake stuff
   ConfigFile: TIniFile;
   AirbrakeTime: integer;
-  TempX, TempY, TempZ:single;
+  TempX, TempY, TempZ: single;
 
 
 implementation
@@ -480,6 +480,7 @@ begin
     ConfigFile.WriteString('configconfig', 'maxindex', '0');
     ConfigFile.WriteString('Telecount', 'count', '0');
     ConfigFile.WriteString('AirbrakeTime', 'seconds', '0');
+    ConfigFile.WriteString('Config', 'airbrakespeed', '0');
   end;
 
   MaxIndex := ConfigFile.ReadInteger('configconfig', 'maxindex', 1);
@@ -538,8 +539,11 @@ begin
   lbwrite('hProcess: ' + IntToStr(hProcess));
   GetAddresses();
 
+  CheckForConfigFile();
+
   //initiliziizng AirBrConf
-  AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10;
+  //AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10;
+  AirBrConf.jinc := ConfigFile.ReadFloat('Config', 'airbrakespeed',1);
   //trackbar vals get divided by 10 to form float values
   AirBrConf.jincboost := AirBrConf.jinc * 4;  //4 seems like a nice number
   AirBrConf.jincnorm := AirBrConf.jinc;
@@ -548,11 +552,13 @@ begin
 
   TimerReadPos.Enabled := True;//enable timer to read location
 
-  CheckForConfigFile();
+
 
   Telecount := ConfigFile.ReadInteger('Telecount', 'count', 1);
   AirbrakeTime := ConfigFile.ReadInteger('AirbrakeTime', 'seconds', 1);
-  LabelAirbrakeTime.Caption := 'Airbrake time: ' + IntToStr(AirbrakeTime) + 's';
+  LabelAirbrakeTime.Caption :=
+    'Airbrake time: ' + IntToStr(AirbrakeTime div 60) + ':' + IntToStr(AirbrakeTime mod 60);
+
 end;
 
 
@@ -761,7 +767,8 @@ end;
 procedure TForm1.TimerAirbrakeTimeTimer(Sender: TObject);
 begin
   Inc(AirbrakeTime);
-  LabelAirbrakeTime.Caption := 'Airbrake time: ' + IntToStr(AirbrakeTime) + 's';
+  LabelAirbrakeTime.Caption :=
+    'Airbrake time: ' + IntToStr(AirbrakeTime div 60) + ':' + IntToStr(AirbrakeTime mod 60);
   ConfigFile.WriteInteger('AirbrakeTime', 'seconds', AirbrakeTime);
 end;
 
@@ -788,7 +795,8 @@ begin
   //map size (ingame units) 6000x6000
   Panel1.Top := ImageMap.Top + (-((round(LocPlayer.fY) div 12))) +
     250 - (Panel1.Height div 2);
-  Panel1.Left := ImageMap.Left + (round(LocPlayer.fX) div 12) + 250 - (Panel1.Width div 2);
+  Panel1.Left := ImageMap.Left + (round(LocPlayer.fX) div 12) + 250 -
+    (Panel1.Width div 2);
 
 
   // SetLayeredWindowAttributes(Panel1.Handle,$FFFF00,$FF0000,1);
@@ -797,29 +805,29 @@ end;
 
 procedure TForm1.TimerSpeedTimer(Sender: TObject);
 var
-  Dist,DiffX,DiffY,DiffZ: single;
+  Dist, DiffX, DiffY, DiffZ: single;
   intDist: integer;
 begin
 
-    DiffX:=LocPlayer.fX-TempX;
-    DiffY:=LocPlayer.fY-TempY;
-    DiffZ:=LocPlayer.fZ-TempZ;
+  DiffX := LocPlayer.fX - TempX;
+  DiffY := LocPlayer.fY - TempY;
+  DiffZ := LocPlayer.fZ - TempZ;
 
-    DiffX:=power(DiffX,2);
-    DiffY:=power(DiffY,2);
-    DiffZ:=power(DiffZ,2);
+  DiffX := power(DiffX, 2);
+  DiffY := power(DiffY, 2);
+  DiffZ := power(DiffZ, 2);
 
-    Dist:= sqrt(DiffX + DiffY + DiffZ);
+  Dist := sqrt(DiffX + DiffY + DiffZ);
 
     {Dist := sqrt(((LocPlayer.fX - TempX) * (LocPlayer.fX - TempX)) +
     ((LocPlayer.fY - TempY) * (LocPlayer.fX - TempY)) +
     ((LocPlayer.fZ - TempZ) * (LocPlayer.fX - TempZ)));  }
-    Dist := Dist * 100 * 1.8;
-    intDist := round(Dist);
-    LabelSpeed.Caption := 'Speed: ' + IntToStr(intDist) + ' km/h';
-    TempX := LocPlayer.fX;
-    TempY := LocPlayer.fY;
-    TempZ := LocPlayer.fZ;
+  Dist := Dist * 2 * 1.8;
+  intDist := round(Dist);
+  LabelSpeed.Caption := 'Speed: ' + IntToStr(intDist) + ' km/h';
+  TempX := LocPlayer.fX;
+  TempY := LocPlayer.fY;
+  TempZ := LocPlayer.fZ;
 end;
 
 //trackbar for changing airbrake speed
@@ -829,6 +837,7 @@ begin
   AirBrConf.jincboost := AirBrConf.jinc * 4;
   AirBrConf.jincnorm := AirBrConf.jinc;
   LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(AirBrConf.jinc);
+  ConfigFile.WriteFloat('Config', 'airbrakespeed', AirBrConf.jinc);
 end;
 
 end.
