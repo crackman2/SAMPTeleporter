@@ -9,6 +9,10 @@
       <Title Value="SAMPTeleporter"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
+      <XPManifest>
+        <DpiAware Value="True"/>
+        <ExecutionLevel Value="2"/>
+      </XPManifest>
       <Icon Value="0"/>
     </General>
     <i18n>
@@ -61,9 +65,15 @@
       <IncludeFiles Value="$(ProjOutDir)"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
+    <Parsing>
+      <Style Value="1"/>
+    </Parsing>
     <CodeGeneration>
       <TargetCPU Value="i386"/>
       <TargetOS Value="win32"/>
+      <Optimizations>
+        <OptimizationLevel Value="4"/>
+      </Optimizations>
       <SmallerCode Value="True"/>
     </CodeGeneration>
     <Linking>
