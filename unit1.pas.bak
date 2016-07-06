@@ -39,6 +39,7 @@ type
     ListBoxDebug: TListBox;
     ListBoxLocations: TListBox;
     Panel1: TPanel;
+    TimerInMenuTeleport: TTimer;
     TimerSpeed: TTimer;
     TimerAirbrakeTime: TTimer;
     TimerAirbrake: TTimer;
@@ -58,6 +59,7 @@ type
     procedure TimerAirbrakeTimer(Sender: TObject);
     procedure TimerAirbrakeTimeTimer(Sender: TObject);
     procedure TimerImagePlrTimer(Sender: TObject);
+    procedure TimerInMenuTeleportTimer(Sender: TObject);
     procedure TimerReadPosTimer(Sender: TObject);
     procedure TimerSpeedTimer(Sender: TObject);
     procedure TrackBarAirbrakeSpeedChange(Sender: TObject);
@@ -83,6 +85,7 @@ type
     fZ: single;
     fAngH: single; //Camera angle , horizontal
     fAngV: single;
+    bInMenu: boolean;
   end;
 
 type
@@ -127,6 +130,7 @@ var                             // https://youtu.be/Ws82rXrjBOI
   ConfigFile: TIniFile;
   AirbrakeTime: integer;
   TempX, TempY, TempZ: single;
+  InMenuX, InMenuY: single;
 
 
 implementation
@@ -543,7 +547,7 @@ begin
 
   //initiliziizng AirBrConf
   //AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10;
-  AirBrConf.jinc := ConfigFile.ReadFloat('Config', 'airbrakespeed',1);
+  AirBrConf.jinc := ConfigFile.ReadFloat('Config', 'airbrakespeed', 1);
   //trackbar vals get divided by 10 to form float values
   AirBrConf.jincboost := AirBrConf.jinc * 4;  //4 seems like a nice number
   AirBrConf.jincnorm := AirBrConf.jinc;
@@ -557,7 +561,8 @@ begin
   Telecount := ConfigFile.ReadInteger('Telecount', 'count', 1);
   AirbrakeTime := ConfigFile.ReadInteger('AirbrakeTime', 'seconds', 1);
   LabelAirbrakeTime.Caption :=
-    'Airbrake time: ' + IntToStr(AirbrakeTime div 60) + ':' + IntToStr(AirbrakeTime mod 60);
+    'Airbrake time: ' + IntToStr(AirbrakeTime div 60) + ':' +
+    IntToStr(AirbrakeTime mod 60);
 
 end;
 
@@ -580,11 +585,18 @@ begin
   fnewX := newX * 12;
   fnewY := newY * 12;
 
+  TimerInMenuTeleport.Enabled := True;
+
+  InMenuX := fnewX;
+  InMenuY := fnewY;
+
+  {
   WriteFloat(fnewX, LocPlayer.dwAddPosX);
   WriteFloat(fnewY, LocPlayer.dwAddPosY);
-  WriteFloat(-500, LocPlayer.dwAddPosZ);
+  WriteFloat(-99, LocPlayer.dwAddPosZ);
   Inc(Telecount);
   ConfigFile.WriteInteger('Telecount', 'count', Telecount);
+  }
 end;
 
 
@@ -768,7 +780,8 @@ procedure TForm1.TimerAirbrakeTimeTimer(Sender: TObject);
 begin
   Inc(AirbrakeTime);
   LabelAirbrakeTime.Caption :=
-    'Airbrake time: ' + IntToStr(AirbrakeTime div 60) + ':' + IntToStr(AirbrakeTime mod 60);
+    'Airbrake time: ' + IntToStr(AirbrakeTime div 60) + ':' +
+    IntToStr(AirbrakeTime mod 60);
   ConfigFile.WriteInteger('AirbrakeTime', 'seconds', AirbrakeTime);
 end;
 
@@ -777,10 +790,27 @@ begin
   //if ImagePlr.Visible then ImagePlr.Visible:=false else ImagePlr.Visible:=true;
 end;
 
+procedure TForm1.TimerInMenuTeleportTimer(Sender: TObject);
+begin
+  Panel1.Left := Mouse.CursorPos.x - Form1.Left - ImageMap.Left;
+  Panel1.Top := Mouse.CursorPos.y - Form1.Top - ImageMap.Top;
+
+  if (not LocPlayer.bInMenu) then
+  begin
+    WriteFloat(InMenuX, LocPlayer.dwAddPosX);
+    WriteFloat(InMenuY, LocPlayer.dwAddPosY);
+    WriteFloat(-99, LocPlayer.dwAddPosZ);
+    Inc(Telecount);
+    ConfigFile.WriteInteger('Telecount', 'count', Telecount);
+    TimerInMenuTeleport.Enabled := False;
+  end;
+end;
+
 
 //read positions, changes labels to output position and teleportation count
 procedure TForm1.TimerReadPosTimer(Sender: TObject);
 begin
+  LocPlayer.bInMenu := boolean(ReadDword($400000 + $76B964));
   LocPlayer.fX := ReadFloat(LocPlayer.dwAddPosX);
   LocPlayer.fY := ReadFloat(LocPlayer.dwAddPosY);
   LocPlayer.fZ := ReadFloat(LocPlayer.dwAddPosZ);

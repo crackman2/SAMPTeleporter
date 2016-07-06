@@ -1,13 +1,13 @@
 object Form1: TForm1
-  Left = 553
-  Height = 534
-  Top = 130
-  Width = 827
+  Left = 796
+  Height = 556
+  Top = 256
+  Width = 849
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SA:MP Teleporter'
-  ClientHeight = 534
-  ClientWidth = 827
+  ClientHeight = 556
+  ClientWidth = 849
   Color = clForm
   Icon.Data = {
     BE1000000000010001002020000001002000A810000016000000280000002000
@@ -169,7 +169,7 @@ object Form1: TForm1
   end
   object EditLocName: TEdit
     Left = 11
-    Height = 21
+    Height = 23
     Top = 175
     Width = 296
     TabOrder = 3
@@ -193,7 +193,7 @@ object Form1: TForm1
   end
   object Label1: TLabel
     Left = 11
-    Height = 13
+    Height = 15
     Top = 248
     Width = 10
     Caption = 'X:'
@@ -201,7 +201,7 @@ object Form1: TForm1
   end
   object Label2: TLabel
     Left = 11
-    Height = 13
+    Height = 15
     Top = 264
     Width = 10
     Caption = 'Y:'
@@ -209,7 +209,7 @@ object Form1: TForm1
   end
   object Label3: TLabel
     Left = 11
-    Height = 13
+    Height = 15
     Top = 280
     Width = 10
     Caption = 'Z:'
@@ -217,7 +217,7 @@ object Form1: TForm1
   end
   object LabelPosX: TLabel
     Left = 24
-    Height = 13
+    Height = 15
     Top = 248
     Width = 6
     Caption = '0'
@@ -225,7 +225,7 @@ object Form1: TForm1
   end
   object LabelPosY: TLabel
     Left = 24
-    Height = 13
+    Height = 15
     Top = 264
     Width = 6
     Caption = '0'
@@ -233,7 +233,7 @@ object Form1: TForm1
   end
   object LabelPosZ: TLabel
     Left = 24
-    Height = 13
+    Height = 15
     Top = 280
     Width = 6
     Caption = '0'
@@ -267,17 +267,17 @@ object Form1: TForm1
   end
   object LabelTelecounter: TLabel
     Left = 112
-    Height = 13
+    Height = 15
     Top = 280
-    Width = 98
+    Width = 108
     Caption = 'Teleportation count:'
     ParentColor = False
   end
   object CheckBoxAskIfRemove: TCheckBox
     Left = 166
-    Height = 17
+    Height = 19
     Top = 240
-    Width = 113
+    Width = 122
     Caption = 'Ask before deletion'
     Checked = True
     State = cbChecked
@@ -285,18 +285,18 @@ object Form1: TForm1
   end
   object CheckBoxAirbrake: TCheckBox
     Left = 166
-    Height = 17
+    Height = 19
     Top = 260
-    Width = 145
+    Width = 156
     Caption = 'Enable Airbrake (press ''X'')'
     OnChange = CheckBoxAirbrakeChange
     TabOrder = 10
   end
   object LabelAirbrakeSpeed: TLabel
     Left = 11
-    Height = 13
+    Height = 15
     Top = 327
-    Width = 79
+    Width = 84
     Caption = 'Airbrake speed: '
     ParentColor = False
   end
@@ -312,18 +312,18 @@ object Form1: TForm1
   end
   object CheckBoxHealthLock: TCheckBox
     Left = 12
-    Height = 17
+    Height = 19
     Top = 488
-    Width = 73
+    Width = 81
     Caption = 'Invincibility'
     OnChange = CheckBoxHealthLockChange
     TabOrder = 12
   end
   object CheckBoxAmmoLock: TCheckBox
     Left = 12
-    Height = 17
+    Height = 19
     Top = 507
-    Width = 86
+    Width = 97
     Caption = 'Infinite Ammo'
     OnChange = CheckBoxAmmoLockChange
     TabOrder = 13
@@ -3768,17 +3768,17 @@ object Form1: TForm1
   end
   object LabelAirbrakeTime: TLabel
     Left = 112
-    Height = 13
+    Height = 15
     Top = 295
-    Width = 70
+    Width = 77
     Caption = 'Airbrake time: '
     ParentColor = False
   end
   object LabelSpeed: TLabel
     Left = 12
-    Height = 13
+    Height = 15
     Top = 304
-    Width = 34
+    Width = 35
     Caption = 'Speed:'
     ParentColor = False
   end
@@ -3786,15 +3786,15 @@ object Form1: TForm1
     Enabled = False
     Interval = 50
     OnTimer = TimerReadPosTimer
-    left = 200
-    top = 80
+    left = 176
+    top = 72
   end
   object TimerAirbrake: TTimer
     Enabled = False
     Interval = 1
     OnTimer = TimerAirbrakeTimer
-    left = 56
-    top = 80
+    left = 48
+    top = 72
   end
   object TrayIcon: TTrayIcon
     BalloonFlags = bfInfo
@@ -3939,19 +3939,26 @@ object Form1: TForm1
       0000
     }
     Hint = 'Press ''X'' to stop waiting and exit SAMP Teleporter'
-    left = 128
-    top = 80
+    left = 112
+    top = 72
   end
   object TimerAirbrakeTime: TTimer
     Enabled = False
     OnTimer = TimerAirbrakeTimeTimer
-    left = 56
-    top = 25
+    left = 48
+    top = 16
   end
   object TimerSpeed: TTimer
     Interval = 500
     OnTimer = TimerSpeedTimer
-    left = 200
-    top = 25
+    left = 176
+    top = 16
+  end
+  object TimerInMenuTeleport: TTimer
+    Enabled = False
+    Interval = 50
+    OnTimer = TimerInMenuTeleportTimer
+    left = 264
+    top = 72
   end
 end
