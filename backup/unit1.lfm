@@ -1,13 +1,13 @@
 object Form1: TForm1
-  Left = 553
-  Height = 668
-  Top = 130
-  Width = 1034
+  Left = 417
+  Height = 617
+  Top = 218
+  Width = 926
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SA:MP Teleporter'
-  ClientHeight = 668
-  ClientWidth = 1034
+  ClientHeight = 617
+  ClientWidth = 926
   Color = clForm
   DesignTimePPI = 120
   Icon.Data = {
@@ -150,210 +150,10 @@ object Form1: TForm1
   OnCreate = FormCreate
   Position = poScreenCenter
   LCLVersion = '2.0.6.0'
-  object ButtonSaveLoc: TButton
-    Left = 14
-    Height = 40
-    Top = 250
-    Width = 116
-    Caption = 'Save Location'
-    OnClick = ButtonSaveLocClick
-    ParentFont = False
-    TabOrder = 0
-  end
-  object ButtonLoadLoc: TButton
-    Left = 140
-    Height = 40
-    Top = 250
-    Width = 120
-    Caption = 'Load Location'
-    OnClick = ButtonLoadLocClick
-    ParentFont = False
-    TabOrder = 2
-  end
-  object EditLocName: TEdit
-    Left = 14
-    Height = 28
-    Top = 219
-    Width = 370
-    ParentFont = False
-    TabOrder = 3
-  end
-  object ButtonDelLoc: TButton
-    Left = 270
-    Height = 40
-    Top = 250
-    Width = 114
-    Caption = 'Delete Location'
-    OnClick = ButtonDelLocClick
-    ParentFont = False
-    TabOrder = 4
-  end
-  object ListBoxLocations: TListBox
-    Left = 14
-    Height = 195
-    Top = 11
-    Width = 370
-    ItemHeight = 0
-    ParentFont = False
-    TabOrder = 5
-  end
-  object Label1: TLabel
-    Left = 14
-    Height = 20
-    Top = 310
-    Width = 12
-    Caption = 'X:'
-    ParentColor = False
-    ParentFont = False
-  end
-  object Label2: TLabel
-    Left = 14
-    Height = 20
-    Top = 330
-    Width = 11
-    Caption = 'Y:'
-    ParentColor = False
-    ParentFont = False
-  end
-  object Label3: TLabel
-    Left = 14
-    Height = 20
-    Top = 350
-    Width = 12
-    Caption = 'Z:'
-    ParentColor = False
-    ParentFont = False
-  end
-  object LabelPosX: TLabel
-    Left = 30
-    Height = 20
-    Top = 310
-    Width = 8
-    Caption = '0'
-    ParentColor = False
-    ParentFont = False
-  end
-  object LabelPosY: TLabel
-    Left = 30
-    Height = 20
-    Top = 330
-    Width = 8
-    Caption = '0'
-    ParentColor = False
-    ParentFont = False
-  end
-  object LabelPosZ: TLabel
-    Left = 30
-    Height = 20
-    Top = 350
-    Width = 8
-    Caption = '0'
-    ParentColor = False
-    ParentFont = False
-  end
-  object ListBoxDebug: TListBox
-    Left = 14
-    Height = 120
-    Top = 450
-    Width = 372
-    ItemHeight = 0
-    ParentFont = False
-    TabOrder = 6
-  end
-  object ButtonGetAddresses: TButton
-    Left = 242
-    Height = 22
-    Top = 579
-    Width = 144
-    Caption = 'Reinitialize'
-    OnClick = ButtonGetAddressesClick
-    ParentFont = False
-    TabOrder = 7
-  end
-  object ButtonClearLog: TButton
-    Left = 15
-    Height = 22
-    Top = 579
-    Width = 98
-    Caption = 'Clear Log'
-    OnClick = ButtonClearLogClick
-    ParentFont = False
-    TabOrder = 8
-  end
-  object LabelTelecounter: TLabel
-    Left = 140
-    Height = 20
-    Top = 350
-    Width = 134
-    Caption = 'Teleportation count:'
-    ParentColor = False
-    ParentFont = False
-  end
-  object CheckBoxAskIfRemove: TCheckBox
-    Left = 208
-    Height = 24
-    Top = 300
-    Width = 154
-    Caption = 'Ask before deletion'
-    Checked = True
-    ParentFont = False
-    State = cbChecked
-    TabOrder = 9
-  end
-  object CheckBoxAirbrake: TCheckBox
-    Left = 208
-    Height = 24
-    Top = 325
-    Width = 196
-    Caption = 'Enable Airbrake (press ''X'')'
-    OnChange = CheckBoxAirbrakeChange
-    ParentFont = False
-    TabOrder = 10
-  end
-  object LabelAirbrakeSpeed: TLabel
-    Left = 14
-    Height = 20
-    Top = 409
-    Width = 107
-    Caption = 'Airbrake speed: '
-    ParentColor = False
-    ParentFont = False
-  end
-  object TrackBarAirbrakeSpeed: TTrackBar
-    Left = 140
-    Height = 31
-    Top = 400
-    Width = 244
-    Max = 100
-    OnChange = TrackBarAirbrakeSpeedChange
-    Position = 10
-    ParentFont = False
-    TabOrder = 11
-  end
-  object CheckBoxHealthLock: TCheckBox
-    Left = 15
-    Height = 24
-    Top = 610
-    Width = 99
-    Caption = 'Invincibility'
-    OnChange = CheckBoxHealthLockChange
-    ParentFont = False
-    TabOrder = 12
-  end
-  object CheckBoxAmmoLock: TCheckBox
-    Left = 15
-    Height = 24
-    Top = 634
-    Width = 119
-    Caption = 'Infinite Ammo'
-    OnChange = CheckBoxAmmoLockChange
-    ParentFont = False
-    TabOrder = 13
-  end
   object ImageMap: TImage
     Left = 400
     Height = 625
-    Top = 10
+    Top = 11
     Width = 625
     OnClick = ImageMapClick
     Picture.Data = {
@@ -3778,6 +3578,209 @@ object Form1: TForm1
       59AE50B511019E4F3F403FB6B359ACD4152BFFD9
     }
   end
+  object ButtonSaveLoc: TButton
+    Left = 14
+    Height = 40
+    Top = 250
+    Width = 116
+    Caption = 'Save Location'
+    OnClick = ButtonSaveLocClick
+    ParentFont = False
+    TabOrder = 0
+  end
+  object ButtonLoadLoc: TButton
+    Left = 140
+    Height = 40
+    Top = 250
+    Width = 120
+    Caption = 'Load Location'
+    OnClick = ButtonLoadLocClick
+    ParentFont = False
+    TabOrder = 2
+  end
+  object EditLocName: TEdit
+    Left = 14
+    Height = 28
+    Top = 219
+    Width = 370
+    ParentFont = False
+    TabOrder = 3
+  end
+  object ButtonDelLoc: TButton
+    Left = 270
+    Height = 40
+    Top = 250
+    Width = 114
+    Caption = 'Delete Location'
+    OnClick = ButtonDelLocClick
+    ParentFont = False
+    TabOrder = 4
+  end
+  object ListBoxLocations: TListBox
+    Left = 14
+    Height = 195
+    Top = 11
+    Width = 370
+    ItemHeight = 0
+    ParentFont = False
+    TabOrder = 5
+  end
+  object Label1: TLabel
+    Left = 14
+    Height = 20
+    Top = 310
+    Width = 12
+    Caption = 'X:'
+    ParentColor = False
+    ParentFont = False
+  end
+  object Label2: TLabel
+    Left = 14
+    Height = 20
+    Top = 330
+    Width = 11
+    Caption = 'Y:'
+    ParentColor = False
+    ParentFont = False
+  end
+  object Label3: TLabel
+    Left = 14
+    Height = 20
+    Top = 350
+    Width = 12
+    Caption = 'Z:'
+    ParentColor = False
+    ParentFont = False
+  end
+  object LabelPosX: TLabel
+    Left = 30
+    Height = 20
+    Top = 310
+    Width = 8
+    Caption = '0'
+    ParentColor = False
+    ParentFont = False
+  end
+  object LabelPosY: TLabel
+    Left = 30
+    Height = 20
+    Top = 330
+    Width = 8
+    Caption = '0'
+    ParentColor = False
+    ParentFont = False
+  end
+  object LabelPosZ: TLabel
+    Left = 30
+    Height = 20
+    Top = 350
+    Width = 8
+    Caption = '0'
+    ParentColor = False
+    ParentFont = False
+  end
+  object ListBoxDebug: TListBox
+    Left = 14
+    Height = 120
+    Top = 450
+    Width = 372
+    ItemHeight = 0
+    ParentFont = False
+    TabOrder = 6
+  end
+  object ButtonGetAddresses: TButton
+    Left = 242
+    Height = 29
+    Top = 579
+    Width = 144
+    Caption = 'Reinitialize'
+    OnClick = ButtonGetAddressesClick
+    ParentFont = False
+    TabOrder = 7
+  end
+  object ButtonClearLog: TButton
+    Left = 15
+    Height = 29
+    Top = 579
+    Width = 98
+    Caption = 'Clear Log'
+    OnClick = ButtonClearLogClick
+    ParentFont = False
+    TabOrder = 8
+  end
+  object LabelTelecounter: TLabel
+    Left = 160
+    Height = 20
+    Top = 350
+    Width = 134
+    Caption = 'Teleportation count:'
+    ParentColor = False
+    ParentFont = False
+  end
+  object CheckBoxAskIfRemove: TCheckBox
+    Left = 160
+    Height = 24
+    Top = 306
+    Width = 154
+    Caption = 'Ask before deletion'
+    Checked = True
+    ParentFont = False
+    State = cbChecked
+    TabOrder = 9
+  end
+  object CheckBoxAirbrake: TCheckBox
+    Left = 160
+    Height = 24
+    Top = 326
+    Width = 196
+    Caption = 'Enable Airbrake (press ''X'')'
+    Checked = True
+    OnChange = CheckBoxAirbrakeChange
+    ParentFont = False
+    State = cbChecked
+    TabOrder = 10
+  end
+  object LabelAirbrakeSpeed: TLabel
+    Left = 14
+    Height = 20
+    Top = 409
+    Width = 107
+    Caption = 'Airbrake speed: '
+    ParentColor = False
+    ParentFont = False
+    OnClick = LabelAirbrakeSpeedClick
+  end
+  object TrackBarAirbrakeSpeed: TTrackBar
+    Left = 152
+    Height = 31
+    Top = 400
+    Width = 240
+    Max = 100
+    OnChange = TrackBarAirbrakeSpeedChange
+    Position = 10
+    ParentFont = False
+    TabOrder = 11
+  end
+  object CheckBoxHealthLock: TCheckBox
+    Left = 400
+    Height = 24
+    Top = 520
+    Width = 99
+    Caption = 'Invincibility'
+    OnChange = CheckBoxHealthLockChange
+    ParentFont = False
+    TabOrder = 12
+  end
+  object CheckBoxAmmoLock: TCheckBox
+    Left = 400
+    Height = 24
+    Top = 544
+    Width = 119
+    Caption = 'Infinite Ammo'
+    OnChange = CheckBoxAmmoLockChange
+    ParentFont = False
+    TabOrder = 13
+  end
   object Panel1: TPanel
     Left = 730
     Height = 10
@@ -3790,7 +3793,7 @@ object Form1: TForm1
     TabOrder = 1
   end
   object LabelAirbrakeTime: TLabel
-    Left = 140
+    Left = 160
     Height = 20
     Top = 369
     Width = 97
@@ -3807,6 +3810,15 @@ object Form1: TForm1
     ParentColor = False
     ParentFont = False
   end
+  object CheckBoxNoReloadLock: TCheckBox
+    Left = 400
+    Height = 24
+    Top = 568
+    Width = 95
+    Caption = 'No Reload'
+    OnChange = CheckBoxNoReloadLockChange
+    TabOrder = 14
+  end
   object TimerReadPos: TTimer
     Enabled = False
     Interval = 50
@@ -3815,7 +3827,6 @@ object Form1: TForm1
     top = 100
   end
   object TimerAirbrake: TTimer
-    Enabled = False
     Interval = 1
     OnTimer = TimerAirbrakeTimer
     left = 70

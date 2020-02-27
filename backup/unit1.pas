@@ -20,6 +20,7 @@ type
     ButtonDelLoc: TButton;
     ButtonSaveLoc: TButton;
     ButtonLoadLoc: TButton;
+    CheckBoxNoReloadLock: TCheckBox;
     CheckBoxAmmoLock: TCheckBox;
     CheckBoxHealthLock: TCheckBox;
     CheckBoxAirbrake: TCheckBox;
@@ -53,8 +54,10 @@ type
     procedure CheckBoxAirbrakeChange(Sender: TObject);
     procedure CheckBoxAmmoLockChange(Sender: TObject);
     procedure CheckBoxHealthLockChange(Sender: TObject);
+    procedure CheckBoxNoReloadLockChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure ImageMapClick(Sender: TObject);
+    procedure LabelAirbrakeSpeedClick(Sender: TObject);
     procedure TimerAirbrakeTimer(Sender: TObject);
     procedure TimerAirbrakeTimeTimer(Sender: TObject);
     procedure TimerImagePlrTimer(Sender: TObject);
@@ -454,17 +457,41 @@ begin
   // HP DEC OPCODES: gta_sa.exe+B3314 - D8 65 04              - fsub dword ptr [ebp+04]
   if CheckBoxHealthLock.Checked then
   begin
-    WriteByte($90, $400000 + $B3314);
-    WriteByte($90, $400000 + $B3314 + 1);
-    WriteByte($90, $400000 + $B3314 + 2);
+    WriteByte($90, dwSAMPBase + $ABD8E);
+    WriteByte($90, dwSAMPBase + $ABD8E + 1);
+    WriteByte($90, dwSAMPBase + $ABD8E + 2);
+    WriteByte($90, dwSAMPBase + $ABD8E + 3);
+    WriteByte($90, dwSAMPBase + $ABD8E + 4);
+    WriteByte($90, dwSAMPBase + $ABD8E + 5);
     lbwrite('Invincibility enabled');
   end
   else
   begin
-    WriteByte($D8, $400000 + $B3314);
-    WriteByte($65, $400000 + $B3314 + 1);
-    WriteByte($04, $400000 + $B3314 + 2);
+    WriteByte($89, dwSAMPBase + $ABD8E);
+    WriteByte($88, dwSAMPBase + $ABD8E + 1);
+    WriteByte($40, dwSAMPBase + $ABD8E + 2);
+    WriteByte($05, dwSAMPBase + $ABD8E + 3);
+    WriteByte($00, dwSAMPBase + $ABD8E + 4);
+    WriteByte($00, dwSAMPBase + $ABD8E + 5);
     lbwrite('Invincibility disabled');
+  end;
+end;
+
+procedure TForm1.CheckBoxNoReloadLockChange(Sender: TObject);
+begin
+  if CheckBoxNoReloadLock.Checked then
+  begin
+    WriteByte($90, $400000 + $3428B0);
+    WriteByte($90, $400000 + $3428B0 + 1);
+    WriteByte($90, $400000 + $3428B0 + 2);
+    lbwrite('No Reload enabled');
+  end
+  else
+  begin
+    WriteByte($89, $400000 + $3428B0);
+    WriteByte($46, $400000 + $3428B0 + 1);
+    WriteByte($08, $400000 + $3428B0 + 2);
+    lbwrite('No Reload disabled');
   end;
 end;
 
@@ -544,11 +571,12 @@ begin
   //initiliziizng AirBrConf
   //AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10;
   AirBrConf.jinc := ConfigFile.ReadFloat('Config', 'airbrakespeed',1);
+  TrackBarAirbrakeSpeed.Position := round(AirBrConf.jinc * 10);
   //trackbar vals get divided by 10 to form float values
   AirBrConf.jincboost := AirBrConf.jinc * 4;  //4 seems like a nice number
   AirBrConf.jincnorm := AirBrConf.jinc;
   AirBrConf.k := (180 / PI); //Rad to Deg or Deg to Rad
-  LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(AirBrConf.jinc);
+  LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(round(AirBrConf.jinc));
 
   TimerReadPos.Enabled := True;//enable timer to read location
 
@@ -585,6 +613,11 @@ begin
   WriteFloat(-500, LocPlayer.dwAddPosZ);
   Inc(Telecount);
   ConfigFile.WriteInteger('Telecount', 'count', Telecount);
+end;
+
+procedure TForm1.LabelAirbrakeSpeedClick(Sender: TObject);
+begin
+
 end;
 
 
@@ -767,8 +800,7 @@ end;
 procedure TForm1.TimerAirbrakeTimeTimer(Sender: TObject);
 begin
   Inc(AirbrakeTime);
-  LabelAirbrakeTime.Caption :=
-    'Airbrake time: ' + IntToStr(AirbrakeTime div 60) + ':' + IntToStr(AirbrakeTime mod 60);
+  LabelAirbrakeTime.Caption := 'Airbrake time: ' + IntToStr(AirbrakeTime div 60) + ':' + IntToStr(AirbrakeTime mod 60);
   ConfigFile.WriteInteger('AirbrakeTime', 'seconds', AirbrakeTime);
 end;
 
@@ -836,8 +868,9 @@ begin
   AirBrConf.jinc := TrackBarAirbrakeSpeed.Position / 10;
   AirBrConf.jincboost := AirBrConf.jinc * 4;
   AirBrConf.jincnorm := AirBrConf.jinc;
-  LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStr(AirBrConf.jinc);
+  LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStrF(AirBrConf.jinc,ffFixed,1,1);
   ConfigFile.WriteFloat('Config', 'airbrakespeed', AirBrConf.jinc);
+
 end;
 
 end.
