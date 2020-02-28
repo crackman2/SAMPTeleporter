@@ -9,12 +9,13 @@ interface
 uses
   Classes, SysUtils, FileUtil, SynHighlighterCpp, SynEdit, Forms, Controls,
   Graphics, Dialogs, StdCtrls, ExtCtrls, ComCtrls, Buttons, Windows,
-  jwatlhelp32, Math, IniFiles;
+  jwatlhelp32, Math, IniFiles, lclintf;
 
 type
   { TForm1 }
 
   TForm1 = class(TForm)
+    ButtonHelp: TButton;
     ButtonClearLog: TButton;
     ButtonGetAddresses: TButton;
     ButtonDelLoc: TButton;
@@ -26,6 +27,8 @@ type
     CheckBoxAirbrake: TCheckBox;
     CheckBoxAskIfRemove: TCheckBox;
     EditLocName: TEdit;
+    ImageGit: TImage;
+    ImageTWS: TImage;
     ImageMap: TImage;
     Label1: TLabel;
     Label2: TLabel;
@@ -49,6 +52,7 @@ type
     procedure ButtonClearLogClick(Sender: TObject);
     procedure ButtonDelLocClick(Sender: TObject);
     procedure ButtonGetAddressesClick(Sender: TObject);
+    procedure ButtonHelpClick(Sender: TObject);
     procedure ButtonLoadLocClick(Sender: TObject);
     procedure ButtonSaveLocClick(Sender: TObject);
     procedure CheckBoxAirbrakeChange(Sender: TObject);
@@ -56,7 +60,9 @@ type
     procedure CheckBoxHealthLockChange(Sender: TObject);
     procedure CheckBoxNoReloadLockChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure ImageGitClick(Sender: TObject);
     procedure ImageMapClick(Sender: TObject);
+    procedure ImageTWSClick(Sender: TObject);
     procedure LabelAirbrakeSpeedClick(Sender: TObject);
     procedure TimerAirbrakeTimer(Sender: TObject);
     procedure TimerAirbrakeTimeTimer(Sender: TObject);
@@ -227,9 +233,9 @@ end;
 procedure GetAddresses();
 begin
   dwSAMPBase := dword(GetModuleBaseAddress(dwProcId, 'samp.dll'));
-  LocPlayer.dwAddPosX := ReadDword(dwSAMPBase + $26BD80) + $30;
-  LocPlayer.dwAddPosY := ReadDword(dwSAMPBase + $26BD80) + $34;
-  LocPlayer.dwAddPosZ := ReadDword(dwSAMPBase + $26BD80) + $38;
+  LocPlayer.dwAddPosX := ReadDword(ReadDword(dwSAMPBase + $150B70) + $14) + $30;
+  LocPlayer.dwAddPosY := ReadDword(ReadDword(dwSAMPBase + $150B70) + $14) + $34;
+  LocPlayer.dwAddPosZ := ReadDword(ReadDword(dwSAMPBase + $150B70) + $14) + $38;
   LocPlayer.dwAddCPosX := $400000 + $69AEB4;
   LocPlayer.dwAddCPosY := $400000 + $69AEB8;
   LocPlayer.dwAddCPosZ := $400000 + $76F334; //getAddress("gta_sa.exe")+0x76F334
@@ -373,6 +379,42 @@ begin
   ListBoxLocations.Clear;
   hProcess := 0;
   FormCreate(Sender);
+end;
+
+procedure TForm1.ButtonHelpClick(Sender: TObject);
+begin
+    ShowMessage('SA:MP Teleporter v1.1' + sLineBreak +
+                'by pombenenge (on YouTube)' + sLineBreak +
+                'Last Updated: 2020-02-28' + sLineBreak +
+                'gtasa.exe version: 1.0 EU/US (hlm crack)' + sLineBreak + sLineBreak +
+                'Features: Location list teleporter, Airbrake, Map click teleporter' + sLineBreak +
+                '                Infinite Ammo, Invicibility, No Reload, Stats' + sLineBreak + sLineBreak +
+                'WARNING: SA:MP Teleporter may get you banned. Use at your own risk.' + sLineBreak + sLineBreak +
+                '-- How to use --' + sLineBreak +
+                '1. Join a SA:MP server and wait until you are in-game (Tested with gtasa.exe v1.0 hlm crack EU).' + sLineBreak +
+                '2. Start the SA:MP Teleporter (If it is already running, click on "Reinitialize").' + sLineBreak +
+                '3. Adjust settings to your liking.' + sLineBreak +
+                '4. Most things are self explanatory.' + sLineBreak +
+                '5. Airbrake controls: W,A,S,D,Space,LCtrl,X.' + sLineBreak + sLineBreak +
+                '-- FAQ --' + sLineBreak +
+                'Q: Does it work in singleplayer?' + sLineBreak +
+                'A: No. It works only with SA:MP (Most recent version as of today).' + sLineBreak + sLineBreak +
+                'Q: What about MTA?' + sLineBreak +
+                'A: No..' + sLineBreak + sLineBreak +
+                'Q: Nothing happens? Why?' + sLineBreak +
+                'A: There can be multiple reasons why it does not work.' + sLineBreak +
+                '   1. You need the correct gtasa.exe for it to work. gtasa.exe v1.0 EU/US hlm crack should both work.' + sLineBreak +
+                '   2. Run as administrator.' + sLineBreak +
+                '   3. Check the instructions above and make sure you are doing it right.' + sLineBreak +
+                '   4. SA:MP Teleporter may be outdated. (If you have confirmed that everything else is not the cause' + sLineBreak +
+                '       contact me).' + sLineBreak + sLineBreak +
+                '-- Hints --' + sLineBreak +
+                '- Press LALT + Enter in-game to enter windowed mode (You can resize it too).' + sLineBreak +
+                '- Second monitor is recommended.' + sLineBreak +
+                '- Invicibilty and Infinite Ammo is more prone to get you banned than No Reload in my experience.' + sLineBreak + sLineBreak +
+                'Click on the icons for GitHub and Youtube links.' + sLineBreak + sLineBreak +
+                'Have fun!'
+                );
 end;
 
 //save location, here you can see the awful act of sticking strings together to make the entry
@@ -589,6 +631,11 @@ begin
 
 end;
 
+procedure TForm1.ImageGitClick(Sender: TObject);
+begin
+  OpenURL('https://github.com/crackman2/SAMPTeleporter');
+end;
+
 
 //teleportation by clicking map (not very accurate, slightly buggy)
 procedure TForm1.ImageMapClick(Sender: TObject);
@@ -613,6 +660,11 @@ begin
   WriteFloat(-500, LocPlayer.dwAddPosZ);
   Inc(Telecount);
   ConfigFile.WriteInteger('Telecount', 'count', Telecount);
+end;
+
+procedure TForm1.ImageTWSClick(Sender: TObject);
+begin
+  OpenURL('https://www.youtube.com/user/pombenenge');
 end;
 
 procedure TForm1.LabelAirbrakeSpeedClick(Sender: TObject);

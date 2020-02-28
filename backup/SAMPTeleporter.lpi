@@ -14,6 +14,10 @@
         <ExecutionLevel Value="requireAdministrator"/>
       </XPManifest>
       <Icon Value="0"/>
+      <Resources Count="2">
+        <Resource_0 FileName="git.png" Type="RCDATA" ResourceName="GIT"/>
+        <Resource_1 FileName="SAMPTeleporter.ico" Type="ICON" ResourceName="SAMPTELEPORTER"/>
+      </Resources>
     </General>
     <i18n>
       <EnableI18N LFM="False"/>
