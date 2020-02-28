@@ -233,9 +233,9 @@ end;
 procedure GetAddresses();
 begin
   dwSAMPBase := dword(GetModuleBaseAddress(dwProcId, 'samp.dll'));
-  LocPlayer.dwAddPosX := ReadDword(ReadDword(dwSAMPBase + $150B70) + $30;
-  LocPlayer.dwAddPosY := ReadDword(ReadDword(dwSAMPBase + $150B70) + $34;
-  LocPlayer.dwAddPosZ := ReadDword(ReadDword(dwSAMPBase + $150B70) + $38;
+  LocPlayer.dwAddPosX := ReadDword(ReadDword(dwSAMPBase + $150B70) + $14) + $30;
+  LocPlayer.dwAddPosY := ReadDword(ReadDword(dwSAMPBase + $150B70) + $14) + $34;
+  LocPlayer.dwAddPosZ := ReadDword(ReadDword(dwSAMPBase + $150B70) + $14) + $38;
   LocPlayer.dwAddCPosX := $400000 + $69AEB4;
   LocPlayer.dwAddCPosY := $400000 + $69AEB8;
   LocPlayer.dwAddCPosZ := $400000 + $76F334; //getAddress("gta_sa.exe")+0x76F334
@@ -499,16 +499,23 @@ begin
   // HP DEC OPCODES: gta_sa.exe+B3314 - D8 65 04              - fsub dword ptr [ebp+04]
   if CheckBoxHealthLock.Checked then
   begin
+    //in SAMP.DLL (Somtimes works)
     WriteByte($90, dwSAMPBase + $ABD8E);
     WriteByte($90, dwSAMPBase + $ABD8E + 1);
     WriteByte($90, dwSAMPBase + $ABD8E + 2);
     WriteByte($90, dwSAMPBase + $ABD8E + 3);
     WriteByte($90, dwSAMPBase + $ABD8E + 4);
     WriteByte($90, dwSAMPBase + $ABD8E + 5);
+
+    //in gta.exe as described above
+    WriteByte($90, $400000 + $B3314 + 0);
+    WriteByte($90, $400000 + $B3314 + 1);
+    WriteByte($90, $400000 + $B3314 + 2);
     lbwrite('Invincibility enabled');
   end
   else
   begin
+    //samp.dll
     WriteByte($89, dwSAMPBase + $ABD8E);
     WriteByte($88, dwSAMPBase + $ABD8E + 1);
     WriteByte($40, dwSAMPBase + $ABD8E + 2);

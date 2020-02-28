@@ -499,22 +499,34 @@ begin
   // HP DEC OPCODES: gta_sa.exe+B3314 - D8 65 04              - fsub dword ptr [ebp+04]
   if CheckBoxHealthLock.Checked then
   begin
+    //in SAMP.DLL (Somtimes works)
     WriteByte($90, dwSAMPBase + $ABD8E);
     WriteByte($90, dwSAMPBase + $ABD8E + 1);
     WriteByte($90, dwSAMPBase + $ABD8E + 2);
     WriteByte($90, dwSAMPBase + $ABD8E + 3);
     WriteByte($90, dwSAMPBase + $ABD8E + 4);
     WriteByte($90, dwSAMPBase + $ABD8E + 5);
+
+    //in gta.exe as described above
+    WriteByte($90, $400000 + $B3314 + 0);
+    WriteByte($90, $400000 + $B3314 + 1);
+    WriteByte($90, $400000 + $B3314 + 2);
     lbwrite('Invincibility enabled');
   end
   else
   begin
+    //samp.dll
     WriteByte($89, dwSAMPBase + $ABD8E);
     WriteByte($88, dwSAMPBase + $ABD8E + 1);
     WriteByte($40, dwSAMPBase + $ABD8E + 2);
     WriteByte($05, dwSAMPBase + $ABD8E + 3);
     WriteByte($00, dwSAMPBase + $ABD8E + 4);
     WriteByte($00, dwSAMPBase + $ABD8E + 5);
+
+    //gta.exe
+    WriteByte($D8, $400000 + $B3314 + 0);
+    WriteByte($65, $400000 + $B3314 + 1);
+    WriteByte($04, $400000 + $B3314 + 2);
     lbwrite('Invincibility disabled');
   end;
 end;
