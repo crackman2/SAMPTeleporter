@@ -88,6 +88,7 @@ type
     dwAddCPosY: DWORD;
     dwAddCPosZ: DWORD;
     dwInteriorID:DWORD;
+    dwInteriorCollision:DWORD;
     fcX: single; //Camera Pos X
     fcY: single; //Camera Pos Y
     fcZ: single;
@@ -233,6 +234,7 @@ begin
   WriteFloat(SavedCoords[LocIndex].fY, LocPlayer.dwAddPosY);
   WriteFloat(SavedCoords[LocIndex].fZ, LocPlayer.dwAddPosZ);
   WriteDword(SavedCoords[LocIndex].InteriorID,LocPlayer.dwInteriorID);
+  WriteDword(SavedCoords[LocIndex].InteriorID,LocPlayer.dwInteriorCollision);
   lbwrite('===Teleportet!=== to ' + SavedCoords[LocIndex].LocationName);
   lbwrite('X: ' + floatToStr(SavedCoords[LocIndex].fX));
   lbwrite('Y: ' + floatToStr(SavedCoords[LocIndex].fY));
@@ -252,6 +254,7 @@ begin
   LocPlayer.dwAddCPosY := $400000 + $69AEB8;
   LocPlayer.dwAddCPosZ := $400000 + $76F334; //getAddress("gta_sa.exe")+0x76F334
   LocPlayer.dwInteriorID:= $400000 + $772914;  //gta_sa.exe+772914
+  LocPlayer.dwInteriorCollision:=  ReadDword($400000 + $77CD98) + $2F;      //[gta_sa.exe + 77CD98] + 2F
   lbwrite('Addresses read:');
   lbwrite('"samp.dll" Base: 0x' + inttohex(dwSAMPBase, 8));
   lbwrite('addposx: 0x' + inttohex(LocPlayer.dwAddPosX, 8));
