@@ -33,6 +33,7 @@ type
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
+    LabelStatus: TLabel;
     LabelSpeed: TLabel;
     LabelAirbrakeTime: TLabel;
     LabelAirbrakeSpeed: TLabel;
@@ -43,6 +44,7 @@ type
     ListBoxDebug: TListBox;
     ListBoxLocations: TListBox;
     Panel1: TPanel;
+    TimerStatus: TTimer;
     TimerSpeed: TTimer;
     TimerAirbrakeTime: TTimer;
     TimerAirbrake: TTimer;
@@ -69,6 +71,7 @@ type
     procedure TimerImagePlrTimer(Sender: TObject);
     procedure TimerReadPosTimer(Sender: TObject);
     procedure TimerSpeedTimer(Sender: TObject);
+    procedure TimerStatusTimer(Sender: TObject);
     procedure TrackBarAirbrakeSpeedChange(Sender: TObject);
   private
     { private declarations }
@@ -84,6 +87,7 @@ type
     dwAddCPosX: DWORD;  //Addresses to camera position in world
     dwAddCPosY: DWORD;
     dwAddCPosZ: DWORD;
+    dwInteriorID:DWORD;
     fcX: single; //Camera Pos X
     fcY: single; //Camera Pos Y
     fcZ: single;
@@ -99,6 +103,7 @@ type
     fX: single;
     fY: single;
     fZ: single;
+    InteriorID:integer;
     LocationName: string;
   end;
 
@@ -187,6 +192,11 @@ begin
   ReadProcessMemory(hProcess, Pointer(Address), @Result, sizeof(Result), nil);
 end;
 
+function WriteDword(Value:DWORD; Address: DWORD): DWORD;
+begin
+  WriteProcessMemory(hProcess, Pointer(Address), @Value, sizeof(Value), nil);
+end;
+
 function ReadFloat(Address: DWORD): single;
 begin
   ReadProcessMemory(hProcess, Pointer(Address), @Result, sizeof(Result), nil);
@@ -222,10 +232,12 @@ begin
   WriteFloat(SavedCoords[LocIndex].fX, LocPlayer.dwAddPosX);
   WriteFloat(SavedCoords[LocIndex].fY, LocPlayer.dwAddPosY);
   WriteFloat(SavedCoords[LocIndex].fZ, LocPlayer.dwAddPosZ);
+  WriteDword(SavedCoords[LocIndex].InteriorID,LocPlayer.dwInteriorID);
   lbwrite('===Teleportet!=== to ' + SavedCoords[LocIndex].LocationName);
   lbwrite('X: ' + floatToStr(SavedCoords[LocIndex].fX));
   lbwrite('Y: ' + floatToStr(SavedCoords[LocIndex].fY));
   lbwrite('Z: ' + floatToStr(SavedCoords[LocIndex].fZ));
+  lbwrite('Interior: ' + intToStr(SavedCoords[LocIndex].InteriorID));
   lbwrite('---------');
 end;
 
@@ -239,6 +251,9 @@ begin
   LocPlayer.dwAddCPosX := $400000 + $69AEB4;
   LocPlayer.dwAddCPosY := $400000 + $69AEB8;
   LocPlayer.dwAddCPosZ := $400000 + $76F334; //getAddress("gta_sa.exe")+0x76F334
+  LocPlayer.dwInteriorCollision1:= $400000 + $4E3EF8;
+  LocPlayer.dwInteriorCollision2:= $400000 + $565554;
+  LocPlayer.dwInteriorID:= $400000 + $772914;  //gta_sa.exe+772914
   lbwrite('Addresses read:');
   lbwrite('"samp.dll" Base: 0x' + inttohex(dwSAMPBase, 8));
   lbwrite('addposx: 0x' + inttohex(LocPlayer.dwAddPosX, 8));
@@ -379,6 +394,9 @@ begin
   ListBoxLocations.Clear;
   hProcess := 0;
   FormCreate(Sender);
+  CheckBoxAmmoLock.Checked:=false;
+  CheckBoxHealthLock.Checked:=false;
+  CheckBoxNoReloadLock.Checked:=false;
 end;
 
 procedure TForm1.ButtonHelpClick(Sender: TObject);
@@ -410,8 +428,7 @@ begin
                 '       contact me).' + sLineBreak + sLineBreak +
                 '-- Hints --' + sLineBreak +
                 '- Press LALT + Enter in-game to enter windowed mode (You can resize it too).' + sLineBreak +
-                '- Second monitor is recommended.' + sLineBreak +
-                '- Invicibilty and Infinite Ammo is more prone to get you banned than No Reload in my experience.' + sLineBreak + sLineBreak +
+                '- Second monitor is recommended.' + sLineBreak + sLineBreak +
                 'Click on the icons for GitHub and Youtube links.' + sLineBreak + sLineBreak +
                 'Have fun!'
                 );
@@ -427,11 +444,13 @@ begin
     SavedCoords[LBIndexer].fX := LocPlayer.fX;
     SavedCoords[LBIndexer].fY := LocPlayer.fY;
     SavedCoords[LBIndexer].fZ := LocPlayer.fZ;
+    SavedCoords[LBIndexer].InteriorID:= ReadDword(LocPlayer.dwInteriorID);
     SavedCoords[LBIndexer].LocationName := EditLocName.Text;
     lbwrite('Location "' + EditLocName.Text + '"' + ' saved!');
     lbwrite('X: ' + floattostr(SavedCoords[LBIndexer].fX));
     lbwrite('Y: ' + floattostr(SavedCoords[LBIndexer].fY));
     lbwrite('Z: ' + floattostr(SavedCoords[LBIndexer].fZ));
+    lbwrite('Interior ID: ' + IntToStr(SavedCoords[LBIndexer].InteriorID));
     lbwrite('---------');
     ListBoxLocations.Items.Add('[' + IntToStr(LBIndexer) + ']' + EditLocName.Text);
 
@@ -443,6 +462,8 @@ begin
       SavedCoords[LBIndexer].fY));
     ConfigFile.WriteString(IntToStr(LBIndexer), 'posz', floattostr(
       SavedCoords[LBIndexer].fZ));
+    ConfigFile.WriteString(IntToStr(LBIndexer), 'interior', IntToStr(
+      SavedCoords[LBIndexer].InteriorID));
 
     TempIndex := ConfigFile.ReadInteger('configconfig', 'maxindex', 1);
     TempIndex := TempIndex + 1;
@@ -482,6 +503,7 @@ begin
     WriteByte($90, $400000 + $3428E6);
     WriteByte($90, $400000 + $3428E6 + 1);
     WriteByte($90, $400000 + $3428E6 + 2);
+
     lbwrite('Infinite Ammo enabled');
   end
   else
@@ -522,24 +544,31 @@ begin
     WriteByte($05, dwSAMPBase + $ABD8E + 3);
     WriteByte($00, dwSAMPBase + $ABD8E + 4);
     WriteByte($00, dwSAMPBase + $ABD8E + 5);
+
+    //gta.exe
+    WriteByte($D8, $400000 + $B3314 + 0);
+    WriteByte($65, $400000 + $B3314 + 1);
+    WriteByte($04, $400000 + $B3314 + 2);
     lbwrite('Invincibility disabled');
   end;
 end;
+
+
 
 procedure TForm1.CheckBoxNoReloadLockChange(Sender: TObject);
 begin
   if CheckBoxNoReloadLock.Checked then
   begin
-    WriteByte($90, $400000 + $3428B0);
-    WriteByte($90, $400000 + $3428B0 + 1);
-    WriteByte($90, $400000 + $3428B0 + 2);
+//  gta_sa.exe+3428AF - 48                    - dec eax
+
+    WriteByte($90, $400000 + $3428AF);
+
     lbwrite('No Reload enabled');
   end
   else
   begin
-    WriteByte($89, $400000 + $3428B0);
-    WriteByte($46, $400000 + $3428B0 + 1);
-    WriteByte($08, $400000 + $3428B0 + 2);
+    WriteByte($48, $400000 + $3428AF);
+
     lbwrite('No Reload disabled');
   end;
 end;
@@ -568,6 +597,7 @@ begin
       SavedCoords[TempIndex].fX := ConfigFile.ReadFloat(IntToStr(TempIndex), 'posx', 1);
       SavedCoords[TempIndex].fY := ConfigFile.ReadFloat(IntToStr(TempIndex), 'posy', 1);
       SavedCoords[TempIndex].fZ := ConfigFile.ReadFloat(IntToStr(TempIndex), 'posz', 1);
+      SavedCoords[TempIndex].InteriorID := ConfigFile.ReadInteger(IntToStr(TempIndex), 'interior', 1);//'interior'
       SavedCoords[TempIndex].LocationName :=
         ConfigFile.ReadString(IntToStr(TempIndex), 'locname', '');
       Form1.ListBoxLocations.Items.Add('[' + IntToStr(TempIndex) +
@@ -615,6 +645,9 @@ begin
   lbwrite('hProcess: ' + IntToStr(hProcess));
   GetAddresses();
 
+  LabelStatus.Caption:='Status: Game found!';
+  LabelStatus.Font.Color:=$00DD00;
+
   CheckForConfigFile();
 
   //initiliziizng AirBrConf
@@ -628,6 +661,7 @@ begin
   LabelAirbrakeSpeed.Caption := 'Airbrake speed: ' + FloatToStrF(AirBrConf.jinc,ffFixed,1,1);
 
   TimerReadPos.Enabled := True;//enable timer to read location
+
 
 
 
@@ -894,6 +928,7 @@ begin
 
 end;
 
+
 procedure TForm1.TimerSpeedTimer(Sender: TObject);
 var
   Dist, DiffX, DiffY, DiffZ: single;
@@ -921,6 +956,18 @@ begin
   TempZ := LocPlayer.fZ;
 end;
 
+procedure TForm1.TimerStatusTimer(Sender: TObject);
+var
+  Wind:HWND=0;
+begin
+  Wind:= FindWindow(nil, 'GTA:SA:MP');
+  if Wind = 0 then
+  begin
+    LabelStatus.Caption:= 'Status: Game not found anymore! Reinitialize!';
+    LabelStatus.Font.Color:= $0000DD;
+  end;
+end;
+
 //trackbar for changing airbrake speed
 procedure TForm1.TrackBarAirbrakeSpeedChange(Sender: TObject);
 begin
@@ -931,5 +978,7 @@ begin
   ConfigFile.WriteFloat('Config', 'airbrakespeed', AirBrConf.jinc);
 
 end;
+
+
 
 end.

@@ -1,12 +1,12 @@
 object Form1: TForm1
-  Left = 636
-  Height = 612
-  Top = 191
+  Left = 478
+  Height = 616
+  Top = 214
   Width = 916
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SA:MP Teleporter'
-  ClientHeight = 612
+  ClientHeight = 616
   ClientWidth = 916
   Color = clForm
   DesignTimePPI = 120
@@ -3680,10 +3680,10 @@ object Form1: TForm1
     ParentFont = False
   end
   object ListBoxDebug: TListBox
-    Left = 14
-    Height = 120
-    Top = 450
-    Width = 372
+    Left = 15
+    Height = 98
+    Top = 472
+    Width = 373
     ItemHeight = 0
     ParentFont = False
     TabOrder = 6
@@ -4087,6 +4087,16 @@ object Form1: TForm1
     }
     Stretch = True
   end
+  object LabelStatus: TLabel
+    Left = 14
+    Height = 20
+    Top = 440
+    Width = 166
+    Caption = 'Status: Game not running'
+    Font.Color = clRed
+    ParentColor = False
+    ParentFont = False
+  end
   object TimerReadPos: TTimer
     Enabled = False
     Interval = 50
@@ -4257,5 +4267,11 @@ object Form1: TForm1
     OnTimer = TimerSpeedTimer
     left = 250
     top = 31
+  end
+  object TimerStatus: TTimer
+    Interval = 2500
+    OnTimer = TimerStatusTimer
+    left = 735
+    top = 536
   end
 end
